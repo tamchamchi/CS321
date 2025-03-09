@@ -1,0 +1,6 @@
+sklearn-crfsuite
+nltk
+underthesea
+beautifulsoup4
+lxml
+pandas

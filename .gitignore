@@ -1,0 +1,18 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+
+
+# Ignore dataset files
+data/
+*.csv
+*.tsv
+*.json
+*.xml
+
+Guidelines-NER-2018_0.pdf
