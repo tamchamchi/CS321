@@ -4,3 +4,4 @@ underthesea
 beautifulsoup4
 lxml
 pandas
+streamlit
