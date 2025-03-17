@@ -140,4 +140,4 @@ def predict(sents):
     return sents, crf_model.predict(sents_to_features)
     
 if __name__ == "__main__":
-    print(predict("Tôi là học sinh Nguyễn Huệ. Tôi ở Huế"))
+    print(predict("con cháu của Bà Trưng, Bà Triệu."))
