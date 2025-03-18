@@ -29,7 +29,7 @@ Make sure you have Node.js and npm installed on your machine. You can download a
     After the installation is complete, you can start the client application using the following command:
 
     ```
-    npm start
+    npm run dev
     ```
 
     This will start the development server and you can view your application in the browser.
