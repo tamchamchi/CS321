@@ -1,6 +1,6 @@
 import streamlit as st
 import re
-from tool import predict  # Hàm predict từ mô hình CRF
+from server.src.tools.auto_pos_tag_tool import predict  # Hàm predict từ mô hình CRF
 
 # Hàm tô màu theo entity
 def highlight_entities(text, labels):
