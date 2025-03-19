@@ -4,10 +4,13 @@ import EntityList from "./EntityList";
 import NERSelection from "./NERSelection";
 import HighlightText from "./HighLightText";
 import CSVReader from "./CSVReader";
+import ListProcessedSentences from "./ListProcessedSentences";
 
 const HighlightNER = () => {
-   const [csvData, setCsvData] = useState({});    //Khai báo biến để lấy data từ file csv chuyển đổi thành Object
-  const [indexSentence, setIndexSentence] = useState(""); // Khai báo index để biết số thứ tự của câu
+  const [csvData, setCsvData] = useState({});
+  const [dataSave, setDataSave] = useState([]);
+  const [indexSentence, setIndexSentence] = useState("");
+  const [text, setText] = useState("");
   const [selectedRange, setSelectedRange] = useState(null);
   const [tags, setTags] = useState([]);
   const [selectedNER, setSelectedNER] = useState("");
@@ -18,14 +21,14 @@ const HighlightNER = () => {
     "MISCELLANEOUS",
   ]);
   const [newNER, setNewNER] = useState("");
-
-  const [responseData, setResponseData] = useState(null);
+  const [DataTagging, setDataTagging] = useState(null);
+  const [dataPredict, setDataPredict] = useState(null);
   const [loading, setLoading] = useState(false);
   const [nerColors, setNerColors] = useState({
-    ORGANIZATION: "rgba(173, 216, 230, 0.5)", // Light Blue
-    LOCATION: "rgba(144, 238, 144, 0.5)", // Light Green
-    PERSON: "rgba(240, 128, 128, 0.5)", // Light Coral
-    MISCELLANEOUS: "rgba(255, 215, 0, 0.5)", // Light Yellow
+    ORGANIZATION: "rgba(173, 216, 230, 0.5)",
+    LOCATION: "rgba(144, 238, 144, 0.5)",
+    PERSON: "rgba(240, 128, 128, 0.5)",
+    MISCELLANEOUS: "rgba(255, 215, 0, 0.5)",
   });
 
   const handleCsvDataUpdate = (data) => {
@@ -39,42 +42,41 @@ const HighlightNER = () => {
     return `rgba(${r}, ${g}, ${b}, 0.5)`;
   };
 
-  const getColor = (ner) => {
-    return nerColors[ner] || "rgba(211, 211, 211, 0.5)"; // Default Gray
+  const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
+
+  const handleSelection = () => {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (range.startOffset !== range.endOffset) {
+      setSelectedRange(range);
+    }
   };
 
+  const handleSetTag = (ner) => {
+    setSelectedNER(ner);
+    if (
+      selectedRange &&
+      !tags.some(
+        (tag) =>
+          tag.start === selectedRange.startOffset &&
+          tag.end === selectedRange.endOffset
+      )
+    ) {
+      setTags([
+        ...tags,
+        {
+          start: selectedRange.startOffset,
+          end: selectedRange.endOffset,
+          ner: ner,
+          color: getColor(ner),
+        },
+      ]);
+      setSelectedRange(null);
+    }
+  };
 
-  // Hàm lưu vị trí đoạn văn bản được bôi đen
-  const handleSelection = () => {
-   const selection = window.getSelection();
-   if (selection.rangeCount === 0) return;
-   
-   const range = selection.getRangeAt(0);
-   if (range.startOffset !== range.endOffset) {
-     setSelectedRange(range);
-   }
- };
-
- //Hàm để set Tag
- const handleSetTag = (ner) => {
-   setSelectedNER(ner);
-   if (selectedRange &&
-       !tags.some((tag) => tag.start === selectedRange.startOffset && tag.end === selectedRange.endOffset)) {
-       
-     setTags([
-       ...tags,
-       {
-         start: selectedRange.startOffset,
-         end: selectedRange.endOffset,
-         ner: ner,
-         color: getColor(ner)
-       }
-     ]);
-     setSelectedRange(null); // Reset sau khi đặt tag
-   }
- };
- 
- //Hàm thêm NER mới
   const addNewNER = () => {
     if (newNER && !nerOptions.includes(newNER)) {
       const newColor = getRandomColor();
@@ -99,16 +101,27 @@ const HighlightNER = () => {
     }
   };
 
-  //Hàm loại bỏ Tag
   const removeTag = (index) => {
     setTags(tags.filter((_, i) => i !== index));
   };
 
+  const handleSaveDataTemp = () => {
+    setIndexSentence("");
+    setTags([]);
+    setDataTagging(null);
+    setDataSave(...dataSave, {
+      index: indexSentence,
+      sentence: `"` + text === "" ? csvData[indexSentence] : text + `"`,
+      predict: dataPredict[0],
+      annotation: DataTagging,
+    });
+  };
+
   const sendDataToBackend = async () => {
-   const text = csvData[indexSentence];
-    const payload = { text, tags };
+    const texts = text === "" ? csvData[indexSentence] : text;
+    const payload = { texts, tags };
     setLoading(true);
-    setResponseData(null);
+    setDataTagging(null);
 
     try {
       const response = await fetch("http://localhost:8000/pos_tagging", {
@@ -124,10 +137,39 @@ const HighlightNER = () => {
       }
 
       const result = await response.json();
-      setResponseData(result);
+      setDataTagging(result);
     } catch (error) {
       console.error("Lỗi:", error);
-      setResponseData({ error: "Lỗi khi gửi dữ liệu!" });
+      setDataTagging({ error: "Lỗi khi gửi dữ liệu!" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePredict = async () => {
+    const texts = text === "" ? csvData[indexSentence] : text;
+    const payload = { texts };
+    setLoading(true);
+    setDataPredict(null);
+
+    try {
+      const response = await fetch("http://localhost:8000/auto_pos_tagging", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi gửi dữ liệu!");
+      }
+
+      const result = await response.json();
+      setDataPredict(result);
+    } catch (error) {
+      console.error("Lỗi:", error);
+      setDataPredict({ error: "Lỗi khi gửi dữ liệu!" });
     } finally {
       setLoading(false);
     }
@@ -136,9 +178,12 @@ const HighlightNER = () => {
   return (
     <div style={{ padding: "10px", fontFamily: "Arial" }}>
       <h2>NER Highlighter</h2>
-      <CSVReader onCsvDataUpdate={handleCsvDataUpdate}/>  
+      <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
 
-      <IndexSentenceInput indexSentence={indexSentence} setIndexSentence={setIndexSentence} />
+      <IndexSentenceInput
+        setText={setText}
+        setIndexSentence={setIndexSentence}
+      />
 
       <NERSelection
         nerOptions={nerOptions}
@@ -152,16 +197,18 @@ const HighlightNER = () => {
         handleSetTag={handleSetTag}
       />
 
-      <HighlightText text={csvData[indexSentence]} handleSelection={handleSelection} />
+      <HighlightText
+        text={text === "" ? csvData[indexSentence] : text}
+        handleSelection={handleSelection}
+      />
 
       <EntityList
         tags={tags}
-        text={csvData[indexSentence]}
+        text={text === "" ? csvData[indexSentence] : text}
         getColor={getColor}
         removeTag={removeTag}
       />
 
-      {/* Button gửi dữ liệu */}
       <button
         onClick={sendDataToBackend}
         style={{
@@ -178,48 +225,95 @@ const HighlightNER = () => {
         {loading ? "Đang xử lý..." : "Gán Nhãn & Gửi"}
       </button>
 
-      {/* Button Reset */}
-      <button
-        onClick={() => {
-          setIndexSentence("")
-          setTags([]);
-          setResponseData(null);
-        }}
+      <div
         style={{
           marginTop: "20px",
-          marginLeft: "10px",
+          padding: "10px",
+          backgroundColor: "#f9f9f9",
+          borderRadius: "5px",
+        }}
+      >
+        <h3>Kết quả gán tag</h3>
+        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+          {DataTagging}
+        </pre>
+      </div>
+
+      <button
+        onClick={handlePredict}
+        style={{
+          marginTop: "20px",
+          marginLeft: "30px",
           padding: "10px",
           fontSize: "16px",
           cursor: "pointer",
-          backgroundColor: "#f44336",
+          backgroundColor: "#4CAF50",
           color: "white",
           border: "none",
           borderRadius: "5px",
         }}
       >
-        Reset
+        {loading ? "Đang xử lý..." : "Dự đoán"}
       </button>
 
-      {/* Hiển thị phản hồi từ Backend */}
-      {responseData && (
-        <div
+      <div
+        style={{
+          marginTop: "20px",
+          padding: "10px",
+          backgroundColor: "#f9f9f9",
+          borderRadius: "5px",
+        }}
+      >
+        <h3>Kết quả dự đoán</h3>
+        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+          {dataPredict}
+        </pre>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center", 
+          marginTop: "20px",
+        }}
+      >
+        <button
+          onClick={handleSaveDataTemp}
           style={{
-            marginTop: "20px",
             padding: "10px",
-            backgroundColor: "#f9f9f9",
+            fontSize: "16px",
+            marginRight: "10px",
+            cursor: "pointer",
+            backgroundColor: "#243ba0",
+            color: "white",
+            border: "none",
             borderRadius: "5px",
           }}
         >
-          <h3>Kết quả từ Backend:</h3>
-          <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-            {responseData}
-          </pre>
-        </div>
-      )}
+          Lưu tạm thời
+        </button>
 
-      <div>
-         
+        <button
+          onClick={() => {
+            setIndexSentence("");
+            setTags([]);
+            setDataTagging(null);
+          }}
+          style={{
+            padding: "10px",
+            fontSize: "16px",
+            cursor: "pointer",
+            backgroundColor: "#f44336",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+          }}
+        >
+          Reset
+        </button>
       </div>
+
+      <ListProcessedSentences dataSave={dataSave} />
     </div>
   );
 };
