@@ -1,6 +1,6 @@
 const HighlightText = ({ text, handleSelection }) => (
    <div
-     style={{
+      style={{
        minHeight: "30px",
        fontSize: "18px",
        border: "1px solid #ddd",
@@ -14,7 +14,7 @@ const HighlightText = ({ text, handleSelection }) => (
      }}
      onMouseUp={handleSelection}
    >
-     {text}
+      {text}
    </div>
  );
  

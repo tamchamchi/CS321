@@ -216,6 +216,10 @@ const HighlightNER = () => {
           </pre>
         </div>
       )}
+
+      <div>
+         
+      </div>
     </div>
   );
 };

@@ -3,7 +3,6 @@ import Papa from "papaparse";
 
 const CSVReader = ({onCsvDataUpdate}) => {
 
-
    // Hàm để đọc và parse file CSV
   const handleFileUpload = (event) => {
    const file = event.target.files[0];
