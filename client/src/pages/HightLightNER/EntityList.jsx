@@ -9,7 +9,14 @@ const EntityList = ({ tags, text, getColor, removeTag }) => (
                     </span>
                     <button 
                         onClick={() => removeTag(index)}
-                        style={{ marginLeft: "10px", cursor: "pointer" }}
+                        style={{
+                           fontSize: "14px",   // Giảm kích thước font chữ
+                           padding: "2px 10px", // Giảm padding để nút nhỏ gọn hơn
+                           height: "25px",     // Giảm chiều cao của nút
+                           marginLeft: "10px", // Khoảng cách bên trái
+                           cursor: "pointer",  // Con trỏ chỉ vào nút
+                           border: "none",     // Bỏ đường viền của nút
+                       }}
                     >
                         ❌ Xóa
                     </button>
