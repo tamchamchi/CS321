@@ -78,4 +78,4 @@ const NERSelection = ({
   </div>
 );
 
-export default NERSelection;
+export default NERSelection
