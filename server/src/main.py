@@ -21,7 +21,7 @@ async def read_root():
 @app.post("/pos_tagging")
 async def pos_tagging(data: dict):
     print(data)
-    return await insert_tags(data)  # Gọi insert_tags bất đồng bộ nếu nó hỗ trợ async
+    return insert_tags(data)  # Gọi insert_tags bất đồng bộ nếu nó hỗ trợ async
 
 @app.post("/auto_pos_tagging")
 async def auto_pos_tagging(data: dict):
