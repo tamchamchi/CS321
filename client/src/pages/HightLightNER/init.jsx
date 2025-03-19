@@ -210,7 +210,7 @@ const HighlightNER = () => {
             borderRadius: "5px",
           }}
         >
-          <h3>Kết quả từ Backend:</h3>
+          <h3>Kết quả</h3>
           <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
             {responseData}
           </pre>

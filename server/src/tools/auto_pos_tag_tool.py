@@ -137,7 +137,7 @@ def predict(sents):
     sents_to_conll = [convert_to_conll(sent) for sent in sents]
     sents_to_features = [sent2features(sent) for sent in sents_to_conll]
 
-    return sents, crf_model.predict(sents_to_features)
+    return sents[0].split(), crf_model.predict(sents_to_features).tolist()[0]
     
 if __name__ == "__main__":
     print(predict("con cháu của Bà Trưng, Bà Triệu."))
