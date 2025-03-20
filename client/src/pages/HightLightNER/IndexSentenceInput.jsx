@@ -21,7 +21,7 @@ const IndexSentenceInput = ({setText, setIndexSentence }) => {
    return (
      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
        <label style={{ marginRight: "10px", whiteSpace: "nowrap" }}>
-         Nhập câu hoặc số thứ tự của câu:
+         Nhập câu hoặc STT của câu:
        </label>
        <input
          value={inputText}

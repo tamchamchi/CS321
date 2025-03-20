@@ -111,7 +111,8 @@ const HighlightNER = () => {
     setDataTagging(null);
     setDataSave(...dataSave, {
       index: indexSentence,
-      sentence: `"` + textInput === "" ? csvData[indexSentence] : textInput + `"`,
+      sentence:
+        `"` + textInput === "" ? csvData[indexSentence] : textInput + `"`,
       predict: dataPredict[0],
       annotation: DataTagging,
     });
@@ -119,7 +120,7 @@ const HighlightNER = () => {
 
   const sendDataToBackend = async () => {
     const text = textInput === "" ? csvData[indexSentence] : textInput;
-    console.log(text, tags)
+    console.log(text, tags);
     const payload = { text, tags };
     setLoading(true);
     setDataTagging(null);
@@ -137,11 +138,9 @@ const HighlightNER = () => {
         throw new Error("Lỗi khi gửi dữ liệu!");
       }
 
-
-      console.log(response)
+      console.log(response);
 
       const result = await response.json();
-
 
       setDataTagging(result);
     } catch (error) {
@@ -154,7 +153,7 @@ const HighlightNER = () => {
 
   const handlePredict = async () => {
     const text = textInput === "" ? csvData[indexSentence] : textInput;
-    console.log(text)
+    console.log(text);
     const payload = { text };
     setLoading(true);
     setDataPredict(null);
@@ -193,6 +192,38 @@ const HighlightNER = () => {
         setText={setTextInput}
         setIndexSentence={setIndexSentence}
       />
+      <div style={{ display: "flex", marginBottom: "10px"}}>
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "5px",
+            backgroundColor: "#f9f9f9",
+            borderRadius: "5px",
+            flex: "1"
+          }}
+        >
+         <h3>Kết quả dự đoán</h3>
+          <pre style={{ whiteSpace: "pre-wrap" }}>
+            {dataPredict}
+          </pre>
+        </div>
+        <button
+          onClick={handlePredict}
+          style={{
+            marginTop: "20px",
+            marginLeft: "30px",
+            padding: "10px",
+            fontSize: "16px",
+            cursor: "pointer",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+          }}
+        >
+          {loading ? "Đang xử lý..." : "Dự đoán"}
+        </button>
+      </div>
 
       <NERSelection
         nerOptions={nerOptions}
@@ -248,41 +279,10 @@ const HighlightNER = () => {
         </pre>
       </div>
 
-      <button
-        onClick={handlePredict}
-        style={{
-          marginTop: "20px",
-          marginLeft: "30px",
-          padding: "10px",
-          fontSize: "16px",
-          cursor: "pointer",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-        }}
-      >
-        {loading ? "Đang xử lý..." : "Dự đoán"}
-      </button>
-
-      <div
-        style={{
-          marginTop: "20px",
-          padding: "5px",
-          backgroundColor: "#f9f9f9",
-          borderRadius: "5px",
-        }}
-      >
-        <h3>Kết quả dự đoán</h3>
-        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-          {dataPredict}
-        </pre>
-      </div>
-
       <div
         style={{
           display: "flex",
-          justifyContent: "center", 
+          justifyContent: "center",
           marginTop: "20px",
         }}
       >

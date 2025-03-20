@@ -51,7 +51,7 @@ Make sure you have Python installed on your machine. You can download and instal
     After the installation is complete, you can start the server application using the following command:
 
     ```
-    uvicorn src.main:app --reload
+    fastapi dev .\src\main.py
     ```
 
     This will start the development server and you can view your application at `http://127.0.0.1:8000`.
