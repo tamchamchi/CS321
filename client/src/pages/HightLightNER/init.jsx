@@ -10,7 +10,7 @@ const HighlightNER = () => {
   const [csvData, setCsvData] = useState({});
   const [dataSave, setDataSave] = useState([]);
   const [indexSentence, setIndexSentence] = useState("");
-  const [text, setText] = useState("");
+  const [textInput, setTextInput] = useState("");
   const [selectedRange, setSelectedRange] = useState(null);
   const [tags, setTags] = useState([]);
   const [selectedNER, setSelectedNER] = useState("");
@@ -111,15 +111,16 @@ const HighlightNER = () => {
     setDataTagging(null);
     setDataSave(...dataSave, {
       index: indexSentence,
-      sentence: `"` + text === "" ? csvData[indexSentence] : text + `"`,
+      sentence: `"` + textInput === "" ? csvData[indexSentence] : textInput + `"`,
       predict: dataPredict[0],
       annotation: DataTagging,
     });
   };
 
   const sendDataToBackend = async () => {
-    const texts = text === "" ? csvData[indexSentence] : text;
-    const payload = { texts, tags };
+    const text = textInput === "" ? csvData[indexSentence] : textInput;
+    console.log(text, tags)
+    const payload = { text, tags };
     setLoading(true);
     setDataTagging(null);
 
@@ -136,7 +137,12 @@ const HighlightNER = () => {
         throw new Error("Lỗi khi gửi dữ liệu!");
       }
 
+
+      console.log(response)
+
       const result = await response.json();
+
+
       setDataTagging(result);
     } catch (error) {
       console.error("Lỗi:", error);
@@ -147,8 +153,9 @@ const HighlightNER = () => {
   };
 
   const handlePredict = async () => {
-    const texts = text === "" ? csvData[indexSentence] : text;
-    const payload = { texts };
+    const text = textInput === "" ? csvData[indexSentence] : textInput;
+    console.log(text)
+    const payload = { text };
     setLoading(true);
     setDataPredict(null);
 
@@ -164,6 +171,8 @@ const HighlightNER = () => {
       if (!response.ok) {
         throw new Error("Lỗi khi gửi dữ liệu!");
       }
+
+      console.log(response);
 
       const result = await response.json();
       setDataPredict(result);
@@ -181,7 +190,7 @@ const HighlightNER = () => {
       <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
 
       <IndexSentenceInput
-        setText={setText}
+        setText={setTextInput}
         setIndexSentence={setIndexSentence}
       />
 
@@ -198,13 +207,13 @@ const HighlightNER = () => {
       />
 
       <HighlightText
-        text={text === "" ? csvData[indexSentence] : text}
+        text={textInput === "" ? csvData[indexSentence] : textInput}
         handleSelection={handleSelection}
       />
 
       <EntityList
         tags={tags}
-        text={text === "" ? csvData[indexSentence] : text}
+        text={textInput === "" ? csvData[indexSentence] : textInput}
         getColor={getColor}
         removeTag={removeTag}
       />
@@ -228,7 +237,7 @@ const HighlightNER = () => {
       <div
         style={{
           marginTop: "20px",
-          padding: "10px",
+          padding: "5px",
           backgroundColor: "#f9f9f9",
           borderRadius: "5px",
         }}
@@ -259,7 +268,7 @@ const HighlightNER = () => {
       <div
         style={{
           marginTop: "20px",
-          padding: "10px",
+          padding: "5px",
           backgroundColor: "#f9f9f9",
           borderRadius: "5px",
         }}
