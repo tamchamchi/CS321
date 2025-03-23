@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from server.src.features.annotation_tool import insert_tags
-from server.src.features.auto_pos_tag_tool import predict
+from server.src.features.build_insert_tag import insert_tags
+from server.src.models.predict_model import predict
 
 app = FastAPI()
 
