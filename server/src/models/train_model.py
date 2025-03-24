@@ -1,13 +1,9 @@
-from sklearn_crfsuite import CRF, metrics, scorers
-from pathlib import Path
-from src.configs import CRF_CONFIG
+from sklearn_crfsuite import CRF, metrics
+from src.configs import CRF_CONFIG, PROCESSED_DATA_DIR, LEN_DEV_DATA, LEN_TRAIN_DATA
 from src.data.make_dataset import Dataset
 from src.models.extract_feature import sent2features, sent2labels
 import pickle
 import os
-
-
-PATH_DATA_TRAIN = Path(__file__).resolve().parents[2] / "data" / "processed" 
 
 def train_crf(X_train, y_train, config):
      crf_model = CRF(
@@ -23,14 +19,11 @@ def train_crf(X_train, y_train, config):
      return crf_model
 
 if __name__ == "__main__":
-     LEN_TRAIN_DATA = 2000
-     LEN_DEV_DATA = 400
-
      train_dataset = Dataset()
      dev_dataset = Dataset()
 
-     train_data = train_dataset.get_data_train(PATH_DATA_TRAIN / "train.csv")
-     dev_data = dev_dataset.get_data_train(PATH_DATA_TRAIN / "dev.csv")
+     train_data = train_dataset.get_data_train(PROCESSED_DATA_DIR/ "train.csv")
+     dev_data = dev_dataset.get_data_train(PROCESSED_DATA_DIR/ "dev.csv")
 
      X_train = [sent2features(sent) for sent in train_data][:LEN_TRAIN_DATA]
      y_train = [sent2labels(sent) for sent in train_data][:LEN_TRAIN_DATA]
