@@ -48,11 +48,9 @@ class Dataset:
 
                if entity_type:
                     tokens_with_tags.append((tokens[0], f"B-{entity_type}"))
-                    for token in tokens[1:]:
-                         tokens_with_tags.append((token, f"I-{entity_type}"))
+                    tokens_with_tags.extend([(token, f"I-{entity_type}") for token in tokens[1:]])
                else:
-                    for token in tokens:
-                         tokens_with_tags.append((token, "O"))
+                    tokens_with_tags.extend([(token, "O") for token in tokens])
           
           return tokens_with_tags
      

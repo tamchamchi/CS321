@@ -16,7 +16,7 @@ CRF_CONFIG = {
      "max_iterations": 100,
      "all_possible_transitions": True,
      "verbose": True,
-     "model_path": f"{MODEL_DIR}\crf_model.pkl" 
+     "model_path": f"{MODEL_DIR}/crf_model.pkl" 
 }
 
 LEN_TRAIN_DATA = 2000
