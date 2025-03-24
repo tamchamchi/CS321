@@ -10,60 +10,132 @@ Make sure you have Python installed on your machine. You can download and instal
 
 1. **Navigate to the server directory:**
 
-    Open your terminal and navigate to the server directory of your project.
+   Open your terminal and navigate to the server directory of your project.
 
-    ```
-    cd path/to/your/project/server
-    ```
+   ```sh
+   cd path/to/your/project/server
+   ```
 
 2. **Create and activate a virtual environment (optional but recommended):**
 
-    Create a virtual environment to manage your dependencies.
+   Create a virtual environment to manage your dependencies.
 
-    ```
-    python -m venv venv
-    ```
+   ```sh
+   python -m venv venv
+   ```
 
-    Activate the virtual environment:
+   Activate the virtual environment:
 
-    - On Windows:
+   - On Windows:
 
-        ```
-        .\venv\Scripts\activate
-        ```
+     ```sh
+     .\venv\Scripts\activate
+     ```
 
-    - On macOS and Linux:
+   - On macOS and Linux:
 
-        ```
-        source venv/bin/activate
-        ```
+     ```sh
+     source venv/bin/activate
+     ```
 
 3. **Install the required packages:**
 
-    Run the following command to install all the necessary packages listed in the `requirements.txt` file.
+   Run the following command to install all the necessary packages listed in the `requirements.txt` file.
 
-    ```
-    pip install -r requirements.txt
-    ```
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 4. **Run the server application:**
 
-    After the installation is complete, you can start the server application using the following command:
+   After the installation is complete, you can start the server application using the following command:
 
-    ```
-    fastapi dev .\src\main.py
-    ```
+   ```sh
+   uvicorn src.main:app --reload
+   ```
 
-    This will start the development server and you can view your application at `http://127.0.0.1:8000`.
+   This will start the development server and you can view your application at `http://127.0.0.1:8000`.
+
+## Training the Model
+
+To train the model, follow these steps:
+
+1. **Navigate to the server directory:**
+
+   ```sh
+   cd path/to/your/project/server
+   ```
+
+2. **Activate the virtual environment:**
+
+   - On Windows:
+
+     ```sh
+     .\venv\Scripts\activate
+     ```
+
+   - On macOS and Linux:
+
+     ```sh
+     source venv/bin/activate
+     ```
+
+3. **Run the training script:**
+
+   ```sh
+   python .\src\models\train_model.py
+   ```
+   or
+   ```sh
+   python -m src.model.train_model
+   ```
+
+   This will train the model using the data and configurations specified in the script.
+
+## Making the Dataset
+
+To prepare the dataset, follow these steps:
+
+1. **Navigate to the server directory:**
+
+   ```sh
+   cd path/to/your/project/server
+   ```
+
+2. **Activate the virtual environment:**
+
+   - On Windows:
+
+     ```sh
+     .\venv\Scripts\activate
+     ```
+
+   - On macOS and Linux:
+
+     ```sh
+     source venv/bin/activate
+     ```
+
+3. **Run the dataset preparation script:**
+
+   ```sh
+   python .\src\data\make_dataset.py
+   ```
+   or
+   ```sh
+   python -m src.data.make.dataset
+   ```
+
+   This will prepare the dataset and save it in the specified directory.
 
 ## Additional Information
 
 - If you encounter any issues during the installation, make sure your Python and pip versions are up to date.
 - You can update pip to the latest version using the following command:
 
-    ```
-    python -m pip install --upgrade pip
-    ```
+  ```sh
+  python -m pip install --upgrade pip
+  ```
 
 - For any other issues, refer to the [FastAPI documentation](https://fastapi.tiangolo.com/).
 
