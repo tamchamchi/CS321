@@ -5,6 +5,7 @@ import NERSelection from "./NERSelection";
 import HighlightText from "./HighLightText";
 import CSVReader from "./CSVReader";
 import ListProcessedSentences from "./ListProcessedSentences";
+import ListProcessedSentences from "./ListProcessedSentences";
 
 const HighlightNER = () => {
   const [csvData, setCsvData] = useState({});
@@ -23,8 +24,14 @@ const HighlightNER = () => {
   const [newNER, setNewNER] = useState("");
   const [DataTagging, setDataTagging] = useState(null);
   const [dataPredict, setDataPredict] = useState(null);
+  const [DataTagging, setDataTagging] = useState(null);
+  const [dataPredict, setDataPredict] = useState(null);
   const [loading, setLoading] = useState(false);
   const [nerColors, setNerColors] = useState({
+    ORGANIZATION: "rgba(173, 216, 230, 0.5)",
+    LOCATION: "rgba(144, 238, 144, 0.5)",
+    PERSON: "rgba(240, 128, 128, 0.5)",
+    MISCELLANEOUS: "rgba(255, 215, 0, 0.5)",
     ORGANIZATION: "rgba(173, 216, 230, 0.5)",
     LOCATION: "rgba(144, 238, 144, 0.5)",
     PERSON: "rgba(240, 128, 128, 0.5)",
@@ -43,6 +50,7 @@ const HighlightNER = () => {
   };
 
   const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
+  const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
 
   const handleSelection = () => {
     const selection = window.getSelection();
@@ -51,6 +59,37 @@ const HighlightNER = () => {
     const range = selection.getRangeAt(0);
     if (range.startOffset !== range.endOffset) {
       setSelectedRange(range);
+    }
+  };
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (range.startOffset !== range.endOffset) {
+      setSelectedRange(range);
+    }
+  };
+
+  const handleSetTag = (ner) => {
+    setSelectedNER(ner);
+    if (
+      selectedRange &&
+      !tags.some(
+        (tag) =>
+          tag.start === selectedRange.startOffset &&
+          tag.end === selectedRange.endOffset
+      )
+    ) {
+      setTags([
+        ...tags,
+        {
+          start: selectedRange.startOffset,
+          end: selectedRange.endOffset,
+          ner: ner,
+          color: getColor(ner),
+        },
+      ]);
+      setSelectedRange(null);
     }
   };
 
@@ -124,6 +163,7 @@ const HighlightNER = () => {
     const payload = { text, tags };
     setLoading(true);
     setDataTagging(null);
+    setDataTagging(null);
 
     try {
       const response = await fetch("http://localhost:8000/pos_tagging", {
@@ -178,6 +218,7 @@ const HighlightNER = () => {
     } catch (error) {
       console.error("Lỗi:", error);
       setDataPredict({ error: "Lỗi khi gửi dữ liệu!" });
+      setDataPredict({ error: "Lỗi khi gửi dữ liệu!" });
     } finally {
       setLoading(false);
     }
@@ -186,6 +227,7 @@ const HighlightNER = () => {
   return (
     <div style={{ padding: "10px", fontFamily: "Arial" }}>
       <h2>NER Highlighter</h2>
+      <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
       <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
 
       <IndexSentenceInput
