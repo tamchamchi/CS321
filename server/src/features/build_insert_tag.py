@@ -49,3 +49,13 @@ def insert_tags(data):
     tree = build_tree(tags, text)
     return tree.to_tagged_text()
 
+if __name__ == "__main__":
+    data = {
+        "text": "Trường Đại học, Bách Khoa Hà Nội",
+        "tags": [
+            {"start": 16, "end": 36, "ner": "ORG"},
+            {"start": 26, "end": 36, "ner": "LOC"},
+        ]
+    }
+
+    print(insert_tags(data))

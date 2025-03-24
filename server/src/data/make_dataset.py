@@ -2,7 +2,7 @@ import pandas as pd
 import csv
 from bs4 import BeautifulSoup
 from nltk.tokenize import word_tokenize, sent_tokenize
-from pathlib import Path
+from src.configs import PROCESSED_DATA_DIR, RAW_DATA_DIR
 from tqdm import tqdm
 
 class Dataset:
@@ -69,16 +69,14 @@ class Dataset:
      
 
 if __name__ == "__main__":
-     PATH_DATA = Path(__file__).resolve().parents[2] / "data"
-     
      dataset_train = Dataset()
-     dataset_train.load_data(PATH_DATA / "raw" / "nervlsp2018" / "VLSP2018-NER-train" / "VLSP2018-NER-train-Jan14")
-     dataset_train.save_data(PATH_DATA / "processed" / "train.csv")
+     dataset_train.load_data(RAW_DATA_DIR / "nervlsp2018" / "VLSP2018-NER-train" / "VLSP2018-NER-train-Jan14")
+     dataset_train.save_data(PROCESSED_DATA_DIR /"train.csv")
 
      dataset_test = Dataset()
-     dataset_test.load_data(PATH_DATA / "raw" / "nervlsp2018" / "VLSP2018-NER-Test-Domains" / "VLSP2018-NER-Test-Domains")
-     dataset_test.save_data(PATH_DATA / "processed" / "test.csv")
+     dataset_test.load_data(RAW_DATA_DIR / "nervlsp2018" / "VLSP2018-NER-Test-Domains" / "VLSP2018-NER-Test-Domains")
+     dataset_test.save_data(PROCESSED_DATA_DIR /"test.csv")
 
      dataset_dev = Dataset()
-     dataset_dev.load_data(PATH_DATA / "raw" / "nervlsp2018" / "VLSP2018-NER-dev" / "VLSP2018-NER-dev")
-     dataset_dev.save_data(PATH_DATA / "processed" / "dev.csv")
+     dataset_dev.load_data(RAW_DATA_DIR / "nervlsp2018" / "VLSP2018-NER-dev" / "VLSP2018-NER-dev")
+     dataset_dev.save_data(PROCESSED_DATA_DIR /"dev.csv")
