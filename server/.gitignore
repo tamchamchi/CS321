@@ -16,3 +16,6 @@ __pycache__/
 *.xml
 
 
+# Ignore log files
+/logs/
+*.log

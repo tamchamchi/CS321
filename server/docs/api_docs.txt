@@ -1,0 +1,87 @@
+# API Documentation
+
+## 1. **Preprocessing Tool API**
+
+### **Endpoint:**
+`POST /preprocessing_tool`
+
+### **Description:**
+This API takes a list of text inputs, processes them through a named entity recognition (NER) model, and returns structured results with identified entities.
+
+### **Request Format:**
+```json
+{
+    "texts": ["Trường Đại học Bách Khoa Hà Nội"]
+}
+```
+
+### **Response Format:**
+```json
+{
+    "status": "success",
+    "data": [
+        {
+            "text": "Trường Đại học Bách Khoa Hà Nội",
+            "tags": [
+                {"start": 16, "end": 32, "ner": "PERSON"}
+            ]
+        }
+    ]
+}
+```
+
+### **Error Responses:**
+| Status Code | Description |
+|------------|-------------|
+| 404 | Data not found |
+| 404 | Missing 'texts' in request body |
+| 404 | Empty 'texts' in request body |
+| 500 | Internal Server Error |
+
+---
+
+## 2. **Annotation Tool API**
+
+### **Endpoint:**
+`POST /annotation_tool`
+
+### **Description:**
+This API takes a text input along with manually annotated entity tags and processes them to format the output accordingly.
+
+### **Request Format:**
+```json
+{
+    "text": "Trường Đại học Bách Khoa Hà Nội",
+    "tags": ["O", "O", "O", "O", "B-PERSON", "I-PERSON", "I-PERSON", "I-PERSON"]
+}
+```
+
+### **Response Format:**
+```json
+{
+    "status": "success",
+    "data": {
+        "text": "Trường Đại học Bách Khoa Hà Nội",
+        "tags": [
+            {"start": 16, "end": 32, "ner": "PERSON"}
+        ]
+    }
+}
+```
+
+### **Error Responses:**
+| Status Code | Description |
+|------------|-------------|
+| 404 | Data not found |
+| 404 | Missing 'text' in request body |
+| 404 | Missing 'tags' in request body |
+| 404 | Empty 'text' in request body |
+| 404 | Empty 'tags' in request body |
+| 500 | Internal Server Error |
+
+---
+
+### **Logging:**
+All API interactions are logged in `api_tools.log`, including error messages and processing details.
+
+For any issues, check the log file located in `LOG_DIR/api_tools.log`.

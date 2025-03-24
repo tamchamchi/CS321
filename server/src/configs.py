@@ -7,6 +7,8 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 
 MODEL_DIR = PROJ_ROOT / "models"
 
+LOG_DIR = PROJ_ROOT / "logs"
+
 CRF_CONFIG = {
      "algorithm": "lbfgs",
      "c1": 0.1,

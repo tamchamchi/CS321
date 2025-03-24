@@ -42,10 +42,6 @@ def insert_tags(data):
     text = data.get("text", "").strip()
     tags = data.get("tags", [])
 
-    # Kiểm tra nếu text hoặc tags rỗng
-    if not text or not tags:
-        return "Không có dữ liệu để xử lý!"
-
     tree = build_tree(tags, text)
     return tree.to_tagged_text()
 
