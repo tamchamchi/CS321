@@ -42,10 +42,16 @@ def insert_tags(data):
     text = data.get("text", "").strip()
     tags = data.get("tags", [])
 
-    # Kiểm tra nếu text hoặc tags rỗng
-    if not text or not tags:
-        return "Không có dữ liệu để xử lý!"
-
     tree = build_tree(tags, text)
     return tree.to_tagged_text()
 
+if __name__ == "__main__":
+    data = {
+        "text": "Trường Đại học, Bách Khoa Hà Nội",
+        "tags": [
+            {"start": 16, "end": 36, "ner": "ORG"},
+            {"start": 26, "end": 36, "ner": "LOC"},
+        ]
+    }
+
+    print(insert_tags(data))
