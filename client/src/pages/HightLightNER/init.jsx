@@ -29,6 +29,10 @@ const HighlightNER = () => {
     LOCATION: "rgba(144, 238, 144, 0.5)",
     PERSON: "rgba(240, 128, 128, 0.5)",
     MISCELLANEOUS: "rgba(255, 215, 0, 0.5)",
+    ORGANIZATION: "rgba(173, 216, 230, 0.5)",
+    LOCATION: "rgba(144, 238, 144, 0.5)",
+    PERSON: "rgba(240, 128, 128, 0.5)",
+    MISCELLANEOUS: "rgba(255, 215, 0, 0.5)",
   });
 
   const handleCsvDataUpdate = (data) => {
@@ -54,6 +58,7 @@ const HighlightNER = () => {
     return `rgba(${r}, ${g}, ${b}, 0.5)`;
   };
 
+  const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
   const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
 
   const handleSelection = () => {
@@ -149,6 +154,7 @@ const HighlightNER = () => {
     const payload = { texts, tags };
     setLoading(true);
     setDataTagging(null);
+    setDataTagging(null);
 
     try {
       const response = await fetch("http://localhost:8000/pos_tagging", {
@@ -163,7 +169,10 @@ const HighlightNER = () => {
         throw new Error("Lỗi khi gửi dữ liệu!");
       }
 
+      console.log(response);
+
       const result = await response.json();
+
       setDataTagging(result);
     } catch (error) {
       console.error("Lỗi:", error);
@@ -176,6 +185,7 @@ const HighlightNER = () => {
   return (
     <div style={{ padding: "10px", fontFamily: "Arial", width:"1200px"}}>
       <h2>NER Highlighter</h2>
+      <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
       <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
 
       <IndexSentenceInput onClickSentenceInput={handleOnClickSentenceInput} />
@@ -227,7 +237,7 @@ const HighlightNER = () => {
       <div
         style={{
           marginTop: "20px",
-          padding: "10px",
+          padding: "5px",
           backgroundColor: "#f9f9f9",
           borderRadius: "5px",
         }}
@@ -241,6 +251,7 @@ const HighlightNER = () => {
       <div
         style={{
           display: "flex",
+          justifyContent: "center",
           justifyContent: "center",
           marginTop: "20px",
         }}
