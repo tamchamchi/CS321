@@ -29,10 +29,6 @@ const HighlightNER = () => {
     LOCATION: "rgba(144, 238, 144, 0.5)",
     PERSON: "rgba(240, 128, 128, 0.5)",
     MISCELLANEOUS: "rgba(255, 215, 0, 0.5)",
-    ORGANIZATION: "rgba(173, 216, 230, 0.5)",
-    LOCATION: "rgba(144, 238, 144, 0.5)",
-    PERSON: "rgba(240, 128, 128, 0.5)",
-    MISCELLANEOUS: "rgba(255, 215, 0, 0.5)",
   });
 
   const handleCsvDataUpdate = (data) => {
@@ -58,7 +54,6 @@ const HighlightNER = () => {
     return `rgba(${r}, ${g}, ${b}, 0.5)`;
   };
 
-  const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
   const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
 
   const handleSelection = () => {
