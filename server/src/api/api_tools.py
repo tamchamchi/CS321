@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from src.features.build_insert_tag import insert_tags
 from src.features.build_convert_output_of_model_to_xml import convert_to_ner_format
 from src.models.predict_model import predict
@@ -22,11 +23,11 @@ logger = logging.getLogger(__name__)
 async def preprocessing_tool(data: dict):
      try:
           if data is None:
-               raise HTTPException(status_code=404, detail="Data not found")
+               raise HTTPException(status_code=400, detail="Data not found")
           if "texts" not in data:
-               raise HTTPException(status_code=404, detail="Missing 'texts' in request body.")
+               raise HTTPException(status_code=400, detail="Missing 'texts' in request body.")
           if not data["texts"]:
-               raise HTTPException(status_code=404, detail="Empty 'texts' in request body.")
+               raise HTTPException(status_code=400, detail="Empty 'texts' in request body.")
           
           result = []
           for text in data["texts"]:               
@@ -34,10 +35,7 @@ async def preprocessing_tool(data: dict):
                print(text, tags)
                result.append(convert_to_ner_format(text, tags))
           
-          return {
-               "status": "success",
-               "data": result
-          }
+          return JSONResponse(content={"status": "success", "data": result})
      except HTTPException as e:
           logger.error(f"HTTPException: {e.detail}")
           raise e
@@ -49,25 +47,28 @@ async def preprocessing_tool(data: dict):
 async def annotation_tool(data: dict):
      try:
           if data is None:
-               raise HTTPException(status_code=404, detail="Data not found")
+               raise HTTPException(status_code=400, detail="Data not found")
           
           if "text" not in data:
-               raise HTTPException(status_code=404, detail="Missing 'text' in request body.")
+               raise HTTPException(status_code=400, detail="Missing 'text' in request body.")
           
           if "tags" not in data:
-               raise HTTPException(status_code=404, detail="Missing 'tags' in request body.")
+               raise HTTPException(status_code=400, detail="Missing 'tags' in request body.")
           
           if not data["text"]:
-               raise HTTPException(status_code=404, detail="Empty 'text' in request body.")
+               raise HTTPException(status_code=400, detail="Empty 'text' in request body.")
           
           if not data["tags"]:
-               raise HTTPException(status_code=404, detail="Empty 'tags' in request body.")
+               raise HTTPException(status_code=400, detail="Empty 'tags' in request body.")
+          
+
+          text = data["text"].get("sentences")
+          tags = data["tags"]  
+          print(text, tags)        
                     
-          result = insert_tags(data)
-          return {
-               "status": "success",
-               "data": result
-          }
+          result = insert_tags({"text": text, "tags": tags})
+          print(result)
+          return JSONResponse(content={"status": "success", "data": result})
      except HTTPException as e:
           logger.error(f"HTTPException: {e.detail}")
           raise e

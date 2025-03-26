@@ -36,6 +36,3 @@ const IndexSentenceInput = ({ onClickSentenceInput }) => {
 
 export default IndexSentenceInput;
 
-};
-
-export default IndexSentenceInput;

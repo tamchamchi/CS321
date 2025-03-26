@@ -10,6 +10,8 @@ import HighlightPredict from "./HighlightPredict";
 const HighlightNER = () => {
   const [csvData, setCsvData] = useState([]);
   const [dataSave, setDataSave] = useState([]);
+  const [textPredict, setTextPredict] = useState("");
+  const [tagsPredict, setTagsPredict] = useState([]);
   const [indexSentence, setIndexSentence] = useState("");
   const [selectedRange, setSelectedRange] = useState(null);
   const [tags, setTags] = useState([]);
@@ -42,6 +44,8 @@ const HighlightNER = () => {
       const data_tags = JSON.parse(json_str);
       setTags(data_tags.tags);
       setTextHighlight(data_tags.text);
+      setTextPredict(data_tags.text);
+      setTagsPredict(data_tags.tags);
     } else {
       setIndexSentence("0");
     }
@@ -57,15 +61,14 @@ const HighlightNER = () => {
   const getColor = (ner) => nerColors[ner] || "rgba(211, 211, 211, 0.5)";
 
   const handleSelection = () => {
-   const selection = window.getSelection();
-   if (selection.rangeCount === 0) return;
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
 
-   const range = selection.getRangeAt(0);
-   if (range.startOffset !== range.endOffset) {
-     setSelectedRange(range);
-   }
- };
-
+    const range = selection.getRangeAt(0);
+    if (range.startOffset !== range.endOffset) {
+      setSelectedRange(range);
+    }
+  };
 
   const handleSetTag = (ner) => {
     setSelectedNER(ner);
@@ -134,41 +137,67 @@ const HighlightNER = () => {
   };
 
   const handleSaveDataTemp = () => {
-    setIndexSentence("");
-    setTags([]);
-    setDataTagging(null);
-    setDataSave(...dataSave, {
-      index: indexSentence,
-      sentence: csvData[indexSentence],
-      annotation: DataTagging,
+    // setIndexSentence("");
+    // setTags([]);
+    // setDataTagging(null);
+    setDataSave((prev) => {
+      const updatedData = Array.isArray(prev) ? prev : [];
+
+      // Kiểm tra nếu index đã tồn tại
+      const existingIndex = updatedData.findIndex(
+        (item) => item.index === indexSentence
+      );
+
+      if (existingIndex !== -1) {
+        // Nếu đã tồn tại, cập nhật giá trị mới
+        updatedData[existingIndex] = {
+          index: indexSentence,
+          sentence: csvData[indexSentence],
+          annotation: DataTagging,
+        };
+      } else {
+        // Nếu chưa tồn tại, thêm mới
+        updatedData.push({
+          index: indexSentence,
+          sentence: csvData[indexSentence],
+          annotation: DataTagging,
+        });
+      }
+
+      return [...updatedData]; // Trả về bản sao để React cập nhật state
     });
   };
 
   const sendDataToBackend = async () => {
-    const texts = csvData[indexSentence];
-    const payload = { texts, tags };
+    const text = csvData[indexSentence];
+    console.log(text);
+    const payload = { text, tags };
     setLoading(true);
-    setDataTagging(null);
     setDataTagging(null);
 
     try {
-      const response = await fetch("http://localhost:8000/pos_tagging", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "http://localhost:8000/api/annotation_tool",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
+        alert("Lỗi khi gửi dữ liệu!");
         throw new Error("Lỗi khi gửi dữ liệu!");
       }
 
       console.log(response);
 
       const result = await response.json();
+      const text = result.data;
 
-      setDataTagging(result);
+      setDataTagging(text);
     } catch (error) {
       console.error("Lỗi:", error);
       setDataTagging({ error: "Lỗi khi gửi dữ liệu!" });
@@ -178,16 +207,15 @@ const HighlightNER = () => {
   };
 
   return (
-    <div style={{ padding: "10px", fontFamily: "Arial", width:"1200px"}}>
+    <div style={{ padding: "10px", fontFamily: "Arial", width: "1200px" }}>
       <h2>NER Highlighter</h2>
-      <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
       <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
 
       <IndexSentenceInput onClickSentenceInput={handleOnClickSentenceInput} />
       <HighlightPredict
-         text={textHighlight}
-         tags = {tags}
-         getColor = {getColor}
+        text={textPredict}
+        tags={tagsPredict}
+        getColor={getColor}
       />
       <NERSelection
         nerOptions={nerOptions}
@@ -201,10 +229,7 @@ const HighlightNER = () => {
         handleSetTag={handleSetTag}
       />
 
-      <HighlightText
-        text={textHighlight}
-        handleSelection={handleSelection}
-      />
+      <HighlightText text={textHighlight} handleSelection={handleSelection} />
 
       <EntityList
         tags={tags}
@@ -239,14 +264,15 @@ const HighlightNER = () => {
       >
         <h3>Kết quả gán tag</h3>
         <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-          {DataTagging}
+          {typeof DataTagging === "string"
+            ? DataTagging
+            : JSON.stringify(DataTagging, null, 2)}
         </pre>
       </div>
 
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
           justifyContent: "center",
           marginTop: "20px",
         }}
@@ -287,7 +313,7 @@ const HighlightNER = () => {
         </button>
       </div>
 
-      <ListProcessedSentences dataSave={dataSave} />
+      {/* <ListProcessedSentences dataSave={dataSave} /> */}
     </div>
   );
 };
