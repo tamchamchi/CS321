@@ -1,5 +1,5 @@
 from sklearn_crfsuite import CRF, metrics
-from src.configs import CRF_CONFIG, PROCESSED_DATA_DIR, LEN_DEV_DATA, LEN_TRAIN_DATA
+from src.configs import CRF_CONFIG, PROCESSED_DATA_DIR, LEN_DEV_DATA, LEN_TRAIN_DATA, REPORT_DIR
 from src.data.make_dataset import Dataset
 from src.models.extract_feature import sent2features, sent2labels
 import pickle
@@ -47,5 +47,9 @@ if __name__ == "__main__":
      # Lưu model
      with open(f'{CRF_CONFIG["model_path"]}', "wb") as file:
           pickle.dump(crf_model, file)
+     
+     with open(f"{REPORT_DIR}\\crf_report.txt", "w") as f:
+          f.write(metrics.flat_classification_report(y_dev, y_pred, labels=labels, digits=3))
+          f.write(f"F1 score: {f1_score}")
 
      print(f"Saving model to: {CRF_CONFIG['model_path']}")

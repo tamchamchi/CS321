@@ -11,7 +11,7 @@ CRF_MODEL = None
 def predict(sents):
     global CRF_MODEL
     if CRF_MODEL is None:
-        with open(f"{MODEL_DIR}/crf_model.pkl", "rb") as f:
+        with open(f"{MODEL_DIR}\\crf_model.pkl", "rb") as f:
             CRF_MODEL = pickle.load(f)
 
     sents = sent_tokenize(sents)
