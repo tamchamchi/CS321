@@ -40,10 +40,10 @@ const HighlightNER = () => {
   const handleOnClickSentenceInput = (inputNumber) => {
     if (parseInt(inputNumber) >= 0) {
       setIndexSentence(inputNumber);
-      let json_str = csvData[inputNumber].tags.replace(/'/g, '"');
+      let json_str = csvData[inputNumber].tags
+      let sent = csvData[inputNumber].sentences;
       const data_tags = JSON.parse(json_str);
-      setTags(data_tags.tags);
-      setTextHighlight(data_tags.text);
+      setTextHighlight(sent);
       setTextPredict(data_tags.text);
       setTagsPredict(data_tags.tags);
     } else {
@@ -152,15 +152,17 @@ const HighlightNER = () => {
         // Nếu đã tồn tại, cập nhật giá trị mới
         updatedData[existingIndex] = {
           index: indexSentence,
-          sentence: csvData[indexSentence],
-          annotation: DataTagging,
+          src_sents: csvData[indexSentence],
+          tagged_sents: DataTagging,
+          manual_tags: tags,
         };
       } else {
         // Nếu chưa tồn tại, thêm mới
         updatedData.push({
           index: indexSentence,
-          sentence: csvData[indexSentence],
-          annotation: DataTagging,
+          src_sents: csvData[indexSentence],
+          tagged_sents: DataTagging,
+          manual_tags: tags,
         });
       }
 
@@ -170,7 +172,6 @@ const HighlightNER = () => {
 
   const sendDataToBackend = async () => {
     const text = csvData[indexSentence];
-    console.log(text);
     const payload = { text, tags };
     setLoading(true);
     setDataTagging(null);
@@ -205,10 +206,22 @@ const HighlightNER = () => {
       setLoading(false);
     }
   };
+  
+  const handRestart = () => {
+    setIndexSentence("");
+    setTags([]);
+    setDataTagging(null);
+    setTextHighlight("");
+    setTextPredict("");
+    setSelectedNER("");
+    setTagsPredict([]);
+    setTags([]);
+    
+  }
 
   return (
     <div style={{ padding: "10px", fontFamily: "Arial", width: "1200px" }}>
-      <h2>NER Highlighter</h2>
+      <h1>Annotation Tool</h1>
       <CSVReader onCsvDataUpdate={handleCsvDataUpdate} />
 
       <IndexSentenceInput onClickSentenceInput={handleOnClickSentenceInput} />
@@ -294,11 +307,7 @@ const HighlightNER = () => {
         </button>
 
         <button
-          onClick={() => {
-            setIndexSentence("");
-            setTags([]);
-            setDataTagging(null);
-          }}
+          onClick={handRestart}
           style={{
             padding: "10px",
             fontSize: "16px",
@@ -313,7 +322,7 @@ const HighlightNER = () => {
         </button>
       </div>
 
-      {/* <ListProcessedSentences dataSave={dataSave} /> */}
+      <ListProcessedSentences dataSave={dataSave} />
     </div>
   );
 };

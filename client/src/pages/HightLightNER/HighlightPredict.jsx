@@ -45,7 +45,7 @@ const HighlightPredict = ({ text, tags, getColor }) => {
    };
  
    return (
-     <div style={{ display: "flex", flexDirection: "row" }}>
+     <div style={{ display: "flex", flexDirection: "row", marginBottom: "20px" }}>
        <p>Dự đoán tự động</p>
        <div
          style={{
