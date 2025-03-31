@@ -2,8 +2,8 @@ def merge_words(words):
     """Ghép danh sách từ thành câu, xử lý dấu câu, dấu ngoặc và dấu nháy hợp lý."""
     opening_brackets = {"(", "{", "[", "“", "‘"}
     closing_brackets = {")", "}", "]", "”", "’"}
-    punctuation_marks = {",", ".", "?", "!"}
-    
+    punctuation_marks = {",", ".", "?", "!", ":"}
+
     result = []
     inside_quotes = False  # Trạng thái của dấu ' và "
     last_token = ""  # Theo dõi từ hoặc dấu trước đó
@@ -11,37 +11,40 @@ def merge_words(words):
     for i, w in enumerate(words):
         if w in {"'", '"'}:  # Xử lý dấu ' và "
             if inside_quotes:
-                result.append(w)  # Nếu là dấu đóng, nối trực tiếp
-                if i + 1 < len(words) and words[i + 1] not in closing_brackets | punctuation_marks:  
-                    result.append(" ")  # Thêm khoảng trắng sau dấu đóng nếu từ tiếp theo không phải dấu câu
+                result.append(w)
+                if i + 1 < len(words) and words[i + 1] not in closing_brackets | punctuation_marks:
+                    result.append(" ")
             else:
                 if result and last_token not in opening_brackets | {"'", '"'}:
-                    result.append(" ")  # Thêm khoảng trắng trước dấu mở nếu cần
-                result.append(w)  # Thêm dấu mở
-            inside_quotes = not inside_quotes  # Đảo trạng thái dấu nháy
+                    result.append(" ")
+                result.append(w)
+            inside_quotes = not inside_quotes
 
-        elif w in opening_brackets:  # Xử lý dấu mở (, {, [, “, ‘
+        elif w in opening_brackets:
             if result and last_token not in opening_brackets | {"'", '"'}:
-                result.append(" ")  # Thêm khoảng trắng trước dấu mở nếu cần
-            result.append(w)  # Thêm dấu mở
+                result.append(" ")
+            result.append(w)
 
-        elif w in closing_brackets:  # Xử lý dấu đóng ), }, ], ”, ’
-            result.append(w)  # Nối trực tiếp dấu đóng
+        elif w in closing_brackets:
+            result.append(w)
 
-        elif w in punctuation_marks:  # Xử lý dấu câu ,.!?
+        elif w in punctuation_marks:  # Xử lý dấu câu , . ? ! :
             while result and result[-1] == " ":
-                result.pop()  # Xóa khoảng trắng dư trước dấu câu
-            result.append(w)  # Thêm dấu câu (không có khoảng trắng trước nó)
+                result.pop()  # Xóa khoảng trắng trước dấu câu
+            result.append(w)
+            # Đảm bảo chỉ có đúng một khoảng trắng sau dấu câu nếu từ tiếp theo không phải dấu câu
+            if i + 1 < len(words) and words[i + 1] not in punctuation_marks:
+                result.append(" ")
 
-        else:  # Xử lý từ bình thường
+        else:
             if result and last_token not in opening_brackets | {"'", '"'}:
-                if not (last_token in {"'", '"'} and inside_quotes):  # Đảm bảo không có khoảng trắng giữa "tam" và anh
+                if not (last_token in {"'", '"'} and inside_quotes):
                     result.append(" ")
             result.append(w)
 
-        last_token = w  # Cập nhật từ hoặc dấu vừa xử lý
+        last_token = w
 
-    return "".join(result)  # Ghép các phần tử trong list thành chuỗi hoàn chỉnh
+    return " ".join("".join(result).split())  # Loại bỏ khoảng trắng dư thừa
 
 def convert_to_ner_format(words, tags):
     """Chuyển danh sách từ và nhãn thành định dạng NER với vị trí thực thể."""

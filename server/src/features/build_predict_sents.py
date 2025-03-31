@@ -12,6 +12,7 @@ def build_predict_sents():
     dataset = pd.read_csv(PROCESSED_DATA_DIR / "clear_label_id.csv")
     count = 0
     flag = 0
+    index = 0
     
     result = []
     for idx, sent in tqdm(enumerate(dataset["sentences"]), desc="Predicting...", total=len(dataset)):
@@ -29,7 +30,8 @@ def build_predict_sents():
         tags = json.dumps(tags, ensure_ascii=False, indent=2)
         
         if flag == 1:
-            result.append([idx, sent, sent_format_xml, tags])  # Lưu kết quả
+            result.append([index, sent, sent_format_xml, tags])  # Lưu kết quả
+            index += 1
             flag = 0    
 
     # Save result với quoting an toàn

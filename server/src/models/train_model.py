@@ -28,8 +28,8 @@ if __name__ == "__main__":
      X_train = [sent2features(sent) for sent in train_data][:LEN_TRAIN_DATA]
      y_train = [sent2labels(sent) for sent in train_data][:LEN_TRAIN_DATA]
 
-     X_dev = [sent2features(sent) for sent in dev_data][:LEN_DEV_DATA]
-     y_dev = [sent2labels(sent) for sent in dev_data][:LEN_DEV_DATA]
+     X_dev = [sent2features(sent) for sent in dev_data]
+     y_dev = [sent2labels(sent) for sent in dev_data]
 
      crf_model = train_crf(X_train, y_train, CRF_CONFIG)
      y_pred = crf_model.predict(X_dev)

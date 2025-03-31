@@ -62,8 +62,8 @@ async def annotation_tool(data: dict):
                raise HTTPException(status_code=400, detail="Empty 'tags' in request body.")
           
 
-          text = data["text"].get("sentences")
-          tags = data["tags"]  
+          text = data["text"]
+          tags = data["tags"]
           print(text, tags)        
                     
           result = insert_tags({"text": text, "tags": tags})

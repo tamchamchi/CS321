@@ -12,7 +12,7 @@ class Node:
     def to_tagged_text(self):
         """ Đệ quy chuyển đổi cây thành văn bản có tag """
         tagged_text = self.text
-        for child in sorted(self.children, key=lambda x: x.start, reverse=True):
+        for child in sorted(self.children, key=lambda x: (x.start, x.start-x.end), reverse=True):
             tagged_text = (tagged_text[:child.start - self.start] + 
                            child.to_tagged_text() + 
                            tagged_text[child.end - self.start:])
@@ -25,7 +25,7 @@ class Node:
 
 def build_tree(tags, text):
     """ Xây dựng cây thực thể dựa trên danh sách tag """
-    tags = sorted(tags, key=lambda x: x["start"])  # Sắp xếp theo start
+    tags = sorted(tags, key=lambda x: (x["start"], x["end"] - x["start"]))  # Sắp xếp theo start, sau đó là độ dài text
     root = Node(0, len(text), "ROOT", text)  # Gốc bao toàn bộ văn bản
 
     stack = [root]  # Stack để theo dõi cấp cha hiện tại

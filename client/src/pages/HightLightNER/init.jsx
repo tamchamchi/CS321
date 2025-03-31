@@ -41,11 +41,11 @@ const HighlightNER = () => {
     if (parseInt(inputNumber) >= 0) {
       setIndexSentence(inputNumber);
       let json_str = csvData[inputNumber].tags
-      let sent = csvData[inputNumber].sentences;
       const data_tags = JSON.parse(json_str);
-      setTextHighlight(sent);
+      setTextHighlight(data_tags.text);
       setTextPredict(data_tags.text);
       setTagsPredict(data_tags.tags);
+      setTags(data_tags.tags);
     } else {
       setIndexSentence("0");
     }
@@ -171,8 +171,13 @@ const HighlightNER = () => {
   };
 
   const sendDataToBackend = async () => {
-    const text = csvData[indexSentence];
-    const payload = { text, tags };
+    const data = csvData[indexSentence].tags;
+    const data_tags = JSON.parse(data);
+    const payload = {
+      text: data_tags.text,
+      tags: tags,
+    };
+
     setLoading(true);
     setDataTagging(null);
 
