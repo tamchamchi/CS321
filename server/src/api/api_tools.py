@@ -55,13 +55,6 @@ async def annotation_tool(data: dict):
           if "tags" not in data:
                raise HTTPException(status_code=400, detail="Missing 'tags' in request body.")
           
-          if not data["text"]:
-               raise HTTPException(status_code=400, detail="Empty 'text' in request body.")
-          
-          if not data["tags"]:
-               raise HTTPException(status_code=400, detail="Empty 'tags' in request body.")
-          
-
           text = data["text"]
           tags = data["tags"]
           print(text, tags)        

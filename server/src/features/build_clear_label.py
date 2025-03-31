@@ -6,35 +6,30 @@ import csv
 from tqdm import tqdm
 
 def clean_enamex_tags(text, count=0):
-    l_split = sent_tokenize(text)
     clear_ = []
 
-    for l in l_split:
-        if l.strip() == "":  # Kiểm tra chuỗi rỗng
-            continue
+    line = re.sub(r'\s+', ' ', text)  # Chuẩn hóa khoảng trắng
+    line = re.sub(r'(<ENAMEX TYPE="[^"]+">)([^<]+)(<ENAMEX)', r'\1\2 \3', line)  # Đảm bảo cách khoảng
 
-        line = re.sub(r'\s+', ' ', l)  # Chuẩn hóa khoảng trắng
-        line = re.sub(r'(<ENAMEX TYPE="[^"]+">)([^<]+)(<ENAMEX)', r'\1\2 \3', line)  # Đảm bảo cách khoảng
+    # Xóa tất cả thẻ <ENAMEX> một lần thay vì dùng while
+    while re.search(r'<ENAMEX TYPE="[^"]+">(.+?)</ENAMEX>', line):
+        line = re.sub(r'<ENAMEX TYPE="[^"]+">(.+?)</ENAMEX>', r'\1', line)
 
-        # Xóa tất cả thẻ <ENAMEX> một lần thay vì dùng while
-        while re.search(r'<ENAMEX TYPE="[^"]+">(.+?)</ENAMEX>', line):
-            line = re.sub(r'<ENAMEX TYPE="[^"]+">(.+?)</ENAMEX>', r'\1', line)
+    # Thêm bước loại bỏ khoảng trắng dư thừa sau khi xử lý ENAMEX
+    line = re.sub(r'\s+', ' ', line).strip()
 
-        # Thêm bước loại bỏ khoảng trắng dư thừa sau khi xử lý ENAMEX
-        line = re.sub(r'\s+', ' ', line).strip()
-
-        count += 1
-        clear_.append([count, line])
+    count += 1
+    clear_.append([count, line])
 
     return count, clear_
 
 def build_clear_label():
     # Load data
-    dataset = pd.read_csv(PROCESSED_DATA_DIR / "test.csv")
+    dataset = pd.read_csv(PROCESSED_DATA_DIR / "enamex_sentences.csv")
 
     result = []
     id = 0
-    for data in tqdm(dataset["raw_data"], desc="Cleaning..."):
+    for data in tqdm(dataset["sentences"], desc="Cleaning..."):
         count, clear_label = clean_enamex_tags(data, id)
         id = count
         result += clear_label

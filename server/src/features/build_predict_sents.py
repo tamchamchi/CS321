@@ -10,9 +10,6 @@ import json
 def build_predict_sents():
     # Load data an toàn với quotechar
     dataset = pd.read_csv(PROCESSED_DATA_DIR / "clear_label_id.csv")
-    count = 0
-    flag = 0
-    index = 0
     
     result = []
     for idx, sent in tqdm(enumerate(dataset["sentences"]), desc="Predicting...", total=len(dataset)):
@@ -22,17 +19,10 @@ def build_predict_sents():
         tokens, labels = predict(sent)  # Dự đoán nhãn NER
         tags = convert_to_ner_format(tokens, labels)  # Chuyển đổi định dạng
 
-        if len(tags.get("tags")) > 0:
-            flag = 1
-            count += 1
-
         sent_format_xml = insert_tags(tags)  # Gắn thẻ vào câu
         tags = json.dumps(tags, ensure_ascii=False, indent=2)
-        
-        if flag == 1:
-            result.append([index, sent, sent_format_xml, tags])  # Lưu kết quả
-            index += 1
-            flag = 0    
+        result.append([idx, sent, sent_format_xml, tags])  # Lưu kết quả
+ 
 
     # Save result với quoting an toàn
     with open(PROCESSED_DATA_DIR / "predict_result.csv", "w", encoding="utf-8", newline='') as file:
@@ -41,7 +31,6 @@ def build_predict_sents():
         writer.writerows(result)
 
     print(f"Predict result saved to {PROCESSED_DATA_DIR / 'predict_result.csv'}")
-    print(f"Total sentences have tags: {count} sentences")
 
 if __name__ == "__main__":
     build_predict_sents()

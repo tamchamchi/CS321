@@ -4,9 +4,11 @@ import Papa from "papaparse";
 const ListProcessedSentences = ({ dataSave }) => {
   // Hàm để tải xuống file CSV
   const downloadCSV = () => {
-    const filteredData = dataSave.filter(
-      (row) => row.index !== undefined && row.index !== null
-    );
+    const filteredData = dataSave
+      .filter((row) => row.index !== undefined && row.index !== null)
+      .sort((a, b) => a.index - b.index); // Sắp xếp theo index
+
+    console.log("Filtered Data:", filteredData); // Kiểm tra dữ liệu đã lọc
 
     const csvData = Papa.unparse(
       filteredData.map((row) => ({

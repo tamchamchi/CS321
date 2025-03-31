@@ -175,7 +175,7 @@ const HighlightNER = () => {
     const data_tags = JSON.parse(data);
     const payload = {
       text: data_tags.text,
-      tags: tags,
+      tags: tags || [],
     };
 
     setLoading(true);
