@@ -26,14 +26,19 @@ def build_enamex_sentences():
         id = count
         result += extracted_sentences
 
-    # Save result
-    output_path = PROCESSED_DATA_DIR / "enamex_sentences.csv"
-    with open(output_path, "w", encoding="utf-8", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(["index", "sentences"])
-        writer.writerows(result)
+    # Chuyển kết quả thành DataFrame
+    df_result = pd.DataFrame(result, columns=["id", "sentences"])
 
-    print(f"ENAMEX sentences saved to {output_path}")
+    # Trộn các hàng ngẫu nhiên
+    df_result = df_result.sample(frac=1, random_state=42).reset_index(drop=True)
+
+    # Cập nhật lại chỉ mục theo thứ tự từ 1
+    df_result["id"] = range(0, len(df_result))
+
+    # Lưu kết quả vào file CSV
+    df_result.to_csv(PROCESSED_DATA_DIR / "enamex_sentences.csv", index=False, encoding="utf-8-sig", quoting=csv.QUOTE_ALL)
+
+    print(f"ENAMEX sentences saved to {PROCESSED_DATA_DIR / 'enamex_sentences.csv'}")
 
 if __name__ == "__main__":
     build_enamex_sentences()
