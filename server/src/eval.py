@@ -6,7 +6,7 @@ import csv
 import pandas as pd
 from collections import OrderedDict
 from nltk.tokenize import WordPunctTokenizer
-
+from sklearn.metrics import classification_report
 
 class Token(object):
 
@@ -95,7 +95,8 @@ def get_entities(line):
     raw = ""
     entities = []
 
-    regex_opentag = re.compile(r"<ENAMEX TYPE=\"(.+?)\">")
+   #  regex_opentag = re.compile(r"<ENAMEX TYPE=\"(.+?)\">")
+    regex_opentag = re.compile(r'<ENAMEX TYPE="(.+?)">')
     regex_closetag = re.compile(r"</ENAMEX>")
     next_start_pos = 0
     match1 = regex_opentag.search(line, next_start_pos)
@@ -240,7 +241,7 @@ def find_syl_index(start, end, syllables):
         if i == len(syllables)-1 and syl.end <= end:
             end_syl_id = i+1
 
-        if i > 0 and syl.start < start and syllables[i-1].end < start:
+        if i > 0 and syl.start < start and syllables[i-1].end < start: 
             start_syl_id = i
 
         if syl.start < start and syl.end >= end:
@@ -273,15 +274,13 @@ def xml2tokens(xml_tagged_sent):
     raw, entities = get_entities(xml_tagged_sent)
     if re.search(r"ENAMEX", raw):
         print(xml_tagged_sent)
-        print(raw)
+      #   print("Search", raw)
         count += 1
-    # assert not re.search(r"<ENAMEX", raw), raw
 
     tokens = tokenize(raw)
     level1_syl_tags = ["O" for i in range(len(tokens))]
     level2_syl_tags = ["O" for i in range(len(tokens))]
     level3_syl_tags = ["O" for i in range(len(tokens))]
-
     flag = False
     for entity in entities:
         value = entity["value"]
@@ -291,17 +290,17 @@ def xml2tokens(xml_tagged_sent):
         start_syl_id, end_syl_id = find_syl_index(start, end, tokens)
         if start_syl_id != None and end_syl_id != None:
             if entity["level"] == 1:
-                level1_syl_tags[start_syl_id] = "B-" + entity_type[1:-1]
+                level1_syl_tags[start_syl_id] = "B-" + entity_type
                 for i in range(start_syl_id + 1, end_syl_id):
-                    level1_syl_tags[i] = "I-" + entity_type[1:-1]
+                    level1_syl_tags[i] = "I-" + entity_type
             elif entity["level"] == 2:
-                level2_syl_tags[start_syl_id] = "B-" + entity_type[1:-1]
+                level2_syl_tags[start_syl_id] = "B-" + entity_type
                 for i in range(start_syl_id + 1, end_syl_id):
-                    level2_syl_tags[i] = "I-" + entity_type[1:-1]
+                    level2_syl_tags[i] = "I-" + entity_type
             else:
-                level3_syl_tags[start_syl_id] = "B-" + entity_type[1:-1]
+                level3_syl_tags[start_syl_id] = "B-" + entity_type
                 for i in range(start_syl_id + 1, end_syl_id):
-                    level3_syl_tags[i] = "I-" + entity_type[1:-1]
+                    level3_syl_tags[i] = "I-" + entity_type
         else:
             print("{},{},\"{}\" in '{}' ({})".format(start,end,value,raw,xml_tagged_sent))
             flag = True
@@ -405,42 +404,10 @@ class TestDataConversion(unittest.TestCase):
         self.assertEqual(raw[entity1["start"]:entity1["end"]], entity1["value"])
 
     def test_cannot_find_sylid(self):
-        sent = "Xôn xao tin '<ENAMEX TYPE=\"PERSON\">Đông Phương Bất Bại</ENAMEX>' <ENAMEX TYPE=\"PERSON\">Trần Kiều Ân</ENAMEX> sắp cưới đàn em"
+        sent = 'Thành viên <ENAMEX TYPE="ORGANIZATION">hahaha Chao <ENAMEX TYPE="LOCATION">EXO</ENAMEX></ENAMEX> đã phải đối mặt với vô số những bình luận gay gắt.'
         raw, entities = get_entities(sent)
-        self.assertTrue(len(entities) > 0)
-        print(raw)
-        print(entities)
         tokens, flag = xml2tokens(sent)
         print(tokens)
-
-        sent = "<ENAMEX TYPE=\"ORGANIZATION\">Da LAB</ENAMEX> - Cuộc đời tuyệt đẹp khi 'có đúng có sai'"
-        raw, entities = get_entities(sent)
-        print(raw)
-        print(entities)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-
-        sent = '\'<ENAMEX TYPE="PERSON">Cavani</ENAMEX> và <ENAMEX TYPE="PERSON">Neymar</ENAMEX> tranh nhau đá penalty nhưng im lặng khi... tính tiền ăn\''
-        raw, entities = get_entities(sent)
-        print(raw)
-        print(entities)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-
-        sent = "'<ENAMEX TYPE=\"LOCATION\">Biển chết</ENAMEX> <ENAMEX TYPE=\"LOCATION\">Trung Quốc</ENAMEX>' hóa nửa hồng, nửa xanh"
-        raw, entities = get_entities(sent)
-        print(raw)
-        print(entities)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-
-        sent = "Trong phần lớn thời gian hiệp hai luôn có 3-4 cái bóng áo xanh vây áp <ENAMEX TYPE=\"PERSON\">\"Ronaldo xứ Nghệ\"</ENAMEX>."
-        raw, entities = get_entities(sent)
-        print(raw)
-        print(entities)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-        print()
 
     def test_tokenize(self):
         tokens = tokenize("Ngân hàng Thương mại Cổ phần Phát triển Nhà TP. HCM")
@@ -448,24 +415,26 @@ class TestDataConversion(unittest.TestCase):
 
         tokens = tokenize("Xôn xao tin 'Đông Phương Bất Bại' Trần Kiều Ân sắp cưới đàn em")
         print(tokens)
+
+
 def calculate_accuracy(goal_data, manual_data):
     tokens_goal, flag_goal = xml2tokens(goal_data)
     tokens_manual, flag_manual = xml2tokens(manual_data)
 
     string_goal = []
     string_manual = []
-    for token_goal in tokens_goal:
+    for token_goal, token_manual in zip(tokens_goal, tokens_manual):
         word = token_goal[0]     # Lấy từ (token)
         pred_label1 = token_goal[1]  # Nhãn dự đoán
         pred_label2 = token_goal[2] # Nhãn dự đoán 1
         pred_label3 = token_goal[3] # Nhãn dự đoán 2
         string_goal.append([word, pred_label1 + pred_label2 + pred_label3])
-    for token_manual in tokens_manual:
+
         word = token_manual[0]     # Lấy từ (token)
         pred_label1 = token_manual[1]  # Nhãn dự đoán
         pred_label2 = token_manual[2] # Nhãn dự đoán 1
         pred_label3 = token_manual[3] # Nhãn dự đoán 2
-        string_manual.append([word, pred_label1 + pred_label2 + pred_label3])\
+        string_manual.append([word, pred_label1 + pred_label2 + pred_label3])
         
     correct = sum(1 for p, a in zip(string_goal, string_manual) if p[1] == a[1])
     total = len(string_manual)
@@ -476,16 +445,71 @@ def load_data_to_caculate_accuracy(goal_path, manual_path):
    df_goal = pd.read_csv(goal_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
    df_manual = pd.read_csv(manual_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
 
-   list_goal_sentence_with_tag = df_goal['goal_text'].to_list()
+   list_goal_sentence_with_tag = df_goal['sentences'].to_list()
    list_manual_sentence_with_tag = df_manual['tagged_sents'].to_list()
     # Tính accuracy cho mỗi cặp câu trong list và lưu vào list_accuracy
    list_accuracy = [calculate_accuracy(goal, manual) for goal, manual in zip(list_goal_sentence_with_tag, list_manual_sentence_with_tag)]
 
    print("Accuracy", sum(list_accuracy) / len(list_accuracy) if list_accuracy else 0)
    return sum(list_accuracy) / len(list_accuracy) if list_accuracy else 0
+
+def calculate_f1(goal_data, manual_data):
+    tokens_goal, flag_goal = xml2tokens(goal_data)
+    tokens_manual, flag_manual = xml2tokens(manual_data)
+
+    y_pred = []
+    y_true = []
+
+    for token_goal, token_manual in zip(tokens_goal, tokens_manual):
+        pred_label1 = token_goal[1]
+        pred_label2 = token_goal[2]
+        pred_label3 = token_goal[3]
+
+        true_label1 = token_manual[1]
+        true_label2 = token_manual[2]
+        true_label3 = token_manual[3]
+
+        # Nối 3 cấp lại để tạo thành 1 nhãn duy nhất
+        y_pred.append(pred_label1 + pred_label2 + pred_label3)
+        y_true.append(true_label1 + true_label2 + true_label3)
+
+    report = classification_report(y_true, y_pred, zero_division=0)
+    print(report)
+    return report
+
+def load_data_to_caculate_f1(goal_path, manual_path):
+    df_goal = pd.read_csv(goal_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
+    df_manual = pd.read_csv(manual_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
+
+    list_goal = df_goal['sentences'].to_list()
+    list_manual = df_manual['tagged_sents'].to_list()
+
+    all_y_true = []
+    all_y_pred = []
+
+    for goal, manual in zip(list_goal, list_manual):
+        tokens_goal, _ = xml2tokens(goal)
+        tokens_manual, _ = xml2tokens(manual)
+
+        for tg, tm in zip(tokens_goal, tokens_manual):
+            all_y_true.append(tg[1] + tg[2] + tg[3])
+            all_y_pred.append(tm[1] + tm[2] + tm[3])
+
+    print(classification_report(all_y_true, all_y_pred, zero_division=0))
+
 if __name__ == "__main__":
-    goal_path = 
-    manual_path_1_khanh = 
-    manual_path_2_duyen = 
-    load_data_to_caculate_accuracy(goal_path, manual_path_1_khanh)
-    load_data_to_caculate_accuracy(goal_path, manual_path_2_duyen)
+   goal_path = r"C:\Users\THAN\Downloads\goal_50_100.csv"
+   manual_path_1_khanh = r"C:\Users\THAN\Downloads\Khanh.csv"
+   manual_path_2_duyen = r"C:\Users\THAN\Downloads\Duyen.csv"
+   #  load_data_to_caculate_accuracy(goal_path, manual_path_1_khanh)
+   #  load_data_to_caculate_accuracy(goal_path, manual_path_2_duyen)
+
+   load_data_to_caculate_f1(goal_path, manual_path_1_khanh)
+   load_data_to_caculate_f1(goal_path, manual_path_2_duyen)
+
+   # load_data_to_caculate_f1
+   # goal_sent = 'hello <ENAMEX TYPE="Organization">FPT</ENAMEX>.'
+   # manual_sent = 'hello <ENAMEX TYPE="Organization">FPT </ENAMEX>.'
+   # calculate_accuracy(goal_sent, manual_sent)
+   # test = TestDataConversion()
+   # test.test_cannot_find_sylid()
