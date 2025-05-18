@@ -21,4 +21,4 @@ def predict(sents):
     return word_tokenize(sents[0]), CRF_MODEL.predict(sents_to_features).tolist()[0]
     
 if __name__ == "__main__":
-    print(predict("Trường Đại học, Đại Bách Khoa Hà Nội"))
+    print(predict("Trường Đại học, Đại Bách Khoa Hà Nội  "))
