@@ -4,7 +4,7 @@ import unittest
 import re
 import csv
 import pandas as pd
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 from nltk.tokenize import WordPunctTokenizer
 from sklearn.metrics import classification_report
 
@@ -216,6 +216,151 @@ def get_entities(line):
 
     return raw, entities
 
+def get_entities_v2(line):
+    """
+
+    Args:
+        line (string): Input sentence (single sentence) with XML tags
+        E.g., Đây là lý do khiến <ENAMEX TYPE=\"PERSON\">Yoon Ah</ENAMEX> quyết định cắt mái tóc dài 'nữ thần'
+
+    Returns:
+        raw (string): raw sentence
+        entities (list): list of entities (json object) (Wit.ai)
+    """
+    debug = False
+    raw = ""
+    entities1 = []
+    entities2 = []
+    entities3 = []
+
+   #  regex_opentag = re.compile(r"<ENAMEX TYPE=\"(.+?)\">")
+    regex_opentag = re.compile(r'<ENAMEX TYPE="(.+?)">')
+    regex_closetag = re.compile(r"</ENAMEX>")
+    next_start_pos = 0
+    match1 = regex_opentag.search(line, next_start_pos)
+    stack = []
+    if match1:
+        raw += line[0:match1.start()]
+        next_start_pos = match1.end()
+        stack.append(match1)
+    else:
+        raw = line
+
+    while len(stack) != 0:
+        if debug: print("#Current stack", stack)
+        match1 = stack.pop()
+        if debug: print("#From next_start_pos {}: {}".format(next_start_pos, line[next_start_pos:]))
+        next_closetag1 = regex_closetag.search(line, next_start_pos)
+        if not next_closetag1:
+            print(line)
+            raise ValueError("Close tag not found")
+        next_end_pos1 = next_closetag1.start()
+        match2 = regex_opentag.search(line, next_start_pos, next_end_pos1)
+        if match2:
+            raw += line[next_start_pos:match2.start()]
+            next_start_pos1 = match2.end()
+            next_closetag2 = regex_closetag.search(line, next_start_pos1)
+            if not next_closetag2:
+                raise ValueError("Close tag not found")
+            next_end_pos2 = next_closetag2.start()
+            match3 = regex_opentag.search(line, next_start_pos1, next_end_pos2)
+            if match3:
+                level = 1
+                raw += line[next_start_pos1:match3.start()]
+                next_start_pos2 = match3.end()
+                value = line[next_start_pos2:next_end_pos2]
+                _type = match3.group(1)
+
+                entity = OrderedDict()
+                entity["type"] = _type
+                entity["value"] = value
+                if level == 1:
+                  entities1.append(entity)
+                elif level == 2:
+                  entities2.append(entity)
+                else:
+                  entities3.append(entity)
+
+                if debug: print("#Entity:", value, _type, level)
+                raw += value
+                next_start_pos = next_closetag2.end()
+                stack.append(match1)
+                stack.append(match2)
+            else:
+                # Get entity between match2 and next_closetag2
+                value = remove_xml_tags( line[match2.end():next_end_pos2] )
+                _type = match2.group(1)
+                # abc <ENAMEX> xyz <ENAMEX>dhg</ENAMEX> mpq</ENAMEX> r
+                level = 1 + depth_level( line[match2.end():next_end_pos2] )
+                if debug: print("#current: ", raw)
+                raw += line[next_start_pos1:next_closetag2.start()]
+                if debug: print("->", raw)
+                entity = OrderedDict()
+                entity["type"] = _type
+                entity["value"] = value
+                if level == 1:
+                    entities1.append(entity)
+                elif level == 2:
+                    entities2.append(entity)
+                else:
+                    entities3.append(entity)
+               
+
+                if debug: print("#Entity:", value, _type, level)
+                next_start_pos = next_closetag2.end()
+                stack.append(match1)
+                next_match2 = regex_opentag.search(line, next_start_pos)
+                next_closetag3 = regex_closetag.search(line, next_start_pos)
+
+                if next_match2:
+                    if next_closetag3 and next_match2.start() < next_closetag3.start():
+                        if debug: print("Next match2:", line[next_match2.start():])
+                        if debug: print("#current: ", raw)
+                        raw += line[next_start_pos:next_match2.start()]
+                        if debug: print("->", raw)
+                        next_start_pos = next_match2.end()
+                        stack.append(next_match2)
+        else:
+            # Get entity between match1 and next_closetag1
+            value = remove_xml_tags( line[match1.end():next_closetag1.start()] )
+            _type = match1.group(1)
+            level = 1 + depth_level( line[match1.end():next_closetag1.start()] )
+            if debug: print("#current: ", raw)
+            raw += line[next_start_pos:next_closetag1.start()]
+            if debug: print("->", raw)
+            entity = OrderedDict()
+            entity["type"] = _type
+            entity["value"] = value
+            if level == 1:
+               entities1.append(entity)
+            elif level == 2:
+               entities2.append(entity)
+            else:
+               entities3.append(entity)
+            if debug: print("#Entity:", value, _type, level)
+            next_start_pos = next_closetag1.end()
+
+            next_match1 = regex_opentag.search(line, next_start_pos)
+            next_closetag3 = regex_closetag.search(line, next_start_pos)
+            if next_match1:
+                if next_closetag3 and next_match1.start() < next_closetag3.start():
+                    if debug: print("#Next match1:", line[next_match1.start():])
+                    if debug: print("#current: ", raw)
+                    raw += line[next_start_pos:next_match1.start()]
+                    if debug: print("->", raw)
+                    next_start_pos = next_match1.end()
+                    stack.append(next_match1)
+                else:
+                    continue
+            else:
+                if debug: print("#current: ", raw)
+                if debug: print("{} {}".format(next_closetag1.end(), line[next_closetag1.end():]))
+                if not re.search(r"</ENAMEX>", line[next_closetag1.end():]):
+                    raw += line[next_closetag1.end():]
+                    if debug: print("->", raw)
+
+    return entities1, entities2, entities3
+
 
 def find_syl_index(start, end, syllables):
     """Find start and end indexes of syllables
@@ -251,10 +396,10 @@ def find_syl_index(start, end, syllables):
         if i == 0 and len(syllables) > 0 and syl.start < start and syl.end < end:
             start_syl_id = i
 
-    if start_syl_id == None:
-        print("Cannot find start_syl_id '{}' (end={}) in '{}'".format(start, end, syllables))
-    if end_syl_id == None:
-        print("Cannot find end_syl_id '{}' (start={}) in '{}'".format(end, start, syllables))
+   #  if start_syl_id == None:
+   #      print("Cannot find start_syl_id '{}' (end={}) in '{}'".format(start, end, syllables))
+   #  if end_syl_id == None:
+   #      print("Cannot find end_syl_id '{}' (start={}) in '{}'".format(end, start, syllables))
 
     return start_syl_id, end_syl_id
 
@@ -273,7 +418,6 @@ def xml2tokens(xml_tagged_sent):
     """
     raw, entities = get_entities(xml_tagged_sent)
     if re.search(r"ENAMEX", raw):
-        print(xml_tagged_sent)
       #   print("Search", raw)
         count += 1
 
@@ -302,214 +446,182 @@ def xml2tokens(xml_tagged_sent):
                 for i in range(start_syl_id + 1, end_syl_id):
                     level3_syl_tags[i] = "I-" + entity_type
         else:
-            print("{},{},\"{}\" in '{}' ({})".format(start,end,value,raw,xml_tagged_sent))
+            # print("{},{},\"{}\" in '{}' ({})".format(start,end,value,raw,xml_tagged_sent))
             flag = True
     res = list(zip([ tk.text for tk in tokens], level1_syl_tags, level2_syl_tags, level3_syl_tags))
     return res, flag
 
 
-class TestDataConversion(unittest.TestCase):
-
-    def test_3level_real(self):
-        sent = '<ENAMEX TYPE="ORGANIZATION">NDĐT</ENAMEX> – Nhân kỷ niệm 63 năm Ngày Giải phóng Thủ đô (10-10-1954 – 10-10-2017), <ENAMEX TYPE="ORGANIZATION">Khoa Thanh nhạc - <ENAMEX TYPE="ORGANIZATION">Học viện Âm nhạc Quốc gia <ENAMEX TYPE="LOCATION">Việt Nam</ENAMEX></ENAMEX></ENAMEX> tổ chức chương trình nghệ thuật đặc biệt “<ENAMEX TYPE="MISCELLANEOUS">Sóng đàn Hà Nội</ENAMEX>”.'
-        print(sent)
-        raw, entities = get_entities(sent)
-        self.assertFalse(re.search(r"<ENAMEX", raw), raw)
-        self.assertFalse(re.search(r"</ENAMEX>", raw), raw)
-        print(raw)
-        print(entities)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-
-    def test_2level_real(self):
-        sent = '<ENAMEX TYPE="ORGANIZATION">Ngân hàng Thương mại Cổ phần Phát triển Nhà <ENAMEX TYPE="LOCATION">TP.HCM</ENAMEX> ABC</ENAMEX> <ENAMEX TYPE="LOCATION">Vĩnh Long</ENAMEX>'
-        print(sent)
-        raw, entities = get_entities(sent)
-        self.assertFalse(re.search(r"<ENAMEX", raw), raw)
-        self.assertFalse(re.search(r"</ENAMEX>", raw), raw)
-        print(raw)
-        print(entities)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-
-    def test_3level_nested(self):
-        sent = 'w0 <ENAMEX TYPE="A">w1 <ENAMEX TYPE="B">w2 <ENAMEX TYPE="C">w3</ENAMEX> w4</ENAMEX> w5 <ENAMEX TYPE="D">w6</ENAMEX> w7 w8</ENAMEX> w9'
-        sent = '<ENAMEX TYPE="A">w1</ENAMEX> w2 <ENAMEX TYPE="B">w3 <ENAMEX TYPE="C">w4 <ENAMEX TYPE="D">w5</ENAMEX> w6 <ENAMEX TYPE="E">w7</ENAMEX></ENAMEX></ENAMEX> "<ENAMEX TYPE="F">w8</ENAMEX>".'
-        print(sent)
-        raw, entities = get_entities(sent)
-        print(raw)
-        print()
-        for e in entities:
-            print(e)
-
-    def test_2level_nested(self):
-
-        # sent = 'w0 <ENAMEX TYPE="A">w1 <ENAMEX TYPE="B">w2</ENAMEX> w3 <ENAMEX TYPE="C">w4</ENAMEX> w5</ENAMEX>'
-        sent = 'w0 <ENAMEX TYPE="A">w1 <ENAMEX TYPE="B">w2</ENAMEX> <ENAMEX TYPE="C">w3</ENAMEX></ENAMEX>'
-        print(sent)
-        raw, entities = get_entities(sent)
-        print(raw)
-        for e in entities:
-            print(e)
-
-    def test_depth_level(self):
-        self.assertEqual(0, depth_level("w1 w2 w3"))
-        self.assertEqual(1, depth_level('w0 w1 <ENAMEX TYPE="B">w2</ENAMEX>'))
-        self.assertEqual(1, depth_level('w0 w1 <ENAMEX TYPE="B">w2</ENAMEX> <ENAMEX TYPE="B">w2</ENAMEX>'))
-        self.assertEqual(2, depth_level('w3 <ENAMEX TYPE="C">w4 <ENAMEX TYPE="D">w5</ENAMEX> w6 <ENAMEX TYPE="E">w7</ENAMEX></ENAMEX>'))
-
-
-    def test_xml2tokens(self):
-        raw = '<ENAMEX TYPE="ORGANIZATION">Ngân hàng Thương mại Cổ phần Phát triển Nhà <ENAMEX TYPE="LOCATION">TP.HCM</ENAMEX> ABC</ENAMEX> <ENAMEX TYPE="LOCATION">Vĩnh Long</ENAMEX>'
-        tokens, _ = xml2tokens(raw)
-        self.assertTupleEqual( ("Ngân", "O", "B-ORGANIZATION"), tokens[0] )
-        print(tokens)
-        raw = "Đây là lý do khiến <ENAMEX TYPE=\"PERSON\">Yoon Ah</ENAMEX> quyết định cắt mái tóc dài 'nữ thần'"
-        tokens, _ = xml2tokens(raw)
-        self.assertTupleEqual( ("Yoon", "B-PERSON", "O"), tokens[5] )
-
-    def test_get_entities(self):
-        sent = "Đây là lý do khiến"
-        raw, entities = get_entities(sent)
-        self.assertEqual("Đây là lý do khiến", raw)
-        self.assertTrue(len(entities) == 0)
-        sent = "Đây là lý do khiến <ENAMEX TYPE=\"PERSON\">Yoon Ah</ENAMEX> quyết định cắt mái tóc dài 'nữ thần'"
-        raw, entities = get_entities(sent)
-        self.assertEqual("Đây là lý do khiến Yoon Ah quyết định cắt mái tóc dài 'nữ thần'", raw)
-        self.assertTrue(len(entities) == 1)
-        entity0 = entities[0]
-        print(raw)
-        print(entity0)
-        self.assertEqual("Yoon Ah", entity0["value"])
-        self.assertEqual("PERSON", entity0["type"])
-        self.assertEqual(19, entity0["start"])
-        self.assertEqual(26, entity0["end"])
-
-        sent = 'Ngoại trưởng <ENAMEX TYPE="LOCATION">Mỹ</ENAMEX> <ENAMEX TYPE="PERSON">Rex Tillerson</ENAMEX> kêu gọi cộng đồng quốc tế ngăn chặn các nước sở hữu vũ khí hạt nhân.'
-        raw, entities = get_entities(sent)
-        self.assertEqual('Ngoại trưởng Mỹ Rex Tillerson kêu gọi cộng đồng quốc tế ngăn chặn các nước sở hữu vũ khí hạt nhân.',raw)
-        entity0 = entities[0]
-        print(raw)
-        print(entity0)
-
-        sent = '<ENAMEX TYPE="ORGANIZATION">Ngân hàng Thương mại Cổ phần Phát triển Nhà <ENAMEX TYPE="LOCATION">TP.HCM</ENAMEX> ABC</ENAMEX> <ENAMEX TYPE="LOCATION">Vĩnh Long</ENAMEX>'
-        raw, entities = get_entities(sent)
-        self.assertEqual('Ngân hàng Thương mại Cổ phần Phát triển Nhà TP.HCM ABC Vĩnh Long', raw)
-        entity0 = entities[0]
-        entity1 = entities[1]
-        print(raw)
-        print(entity0)
-        print(entity1)
-        self.assertEqual(raw[entity0["start"]:entity0["end"]], entity0["value"])
-        self.assertEqual(raw[entity1["start"]:entity1["end"]], entity1["value"])
-
-    def test_cannot_find_sylid(self):
-        sent = 'Thành viên <ENAMEX TYPE="ORGANIZATION">hahaha Chao <ENAMEX TYPE="LOCATION">EXO</ENAMEX></ENAMEX> đã phải đối mặt với vô số những bình luận gay gắt.'
-        raw, entities = get_entities(sent)
-        tokens, flag = xml2tokens(sent)
-        print(tokens)
-
-    def test_tokenize(self):
-        tokens = tokenize("Ngân hàng Thương mại Cổ phần Phát triển Nhà TP. HCM")
-        print([ tk.text for tk in tokens ])
-
-        tokens = tokenize("Xôn xao tin 'Đông Phương Bất Bại' Trần Kiều Ân sắp cưới đàn em")
-        print(tokens)
-
-
-def calculate_accuracy(goal_data, manual_data):
+def calculate_token(goal_data, manual_data):
     tokens_goal, flag_goal = xml2tokens(goal_data)
     tokens_manual, flag_manual = xml2tokens(manual_data)
-
-    string_goal = []
-    string_manual = []
-    for token_goal, token_manual in zip(tokens_goal, tokens_manual):
-        word = token_goal[0]     # Lấy từ (token)
-        pred_label1 = token_goal[1]  # Nhãn dự đoán
-        pred_label2 = token_goal[2] # Nhãn dự đoán 1
-        pred_label3 = token_goal[3] # Nhãn dự đoán 2
-        string_goal.append([word, pred_label1 + pred_label2 + pred_label3])
-
-        word = token_manual[0]     # Lấy từ (token)
-        pred_label1 = token_manual[1]  # Nhãn dự đoán
-        pred_label2 = token_manual[2] # Nhãn dự đoán 1
-        pred_label3 = token_manual[3] # Nhãn dự đoán 2
-        string_manual.append([word, pred_label1 + pred_label2 + pred_label3])
-        
-    correct = sum(1 for p, a in zip(string_goal, string_manual) if p[1] == a[1])
-    total = len(string_manual)
-    return correct / total if total > 0 else 0
-
-def load_data_to_caculate_accuracy(goal_path, manual_path):
-
-   df_goal = pd.read_csv(goal_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
-   df_manual = pd.read_csv(manual_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
-
-   list_goal_sentence_with_tag = df_goal['sentences'].to_list()
-   list_manual_sentence_with_tag = df_manual['tagged_sents'].to_list()
-    # Tính accuracy cho mỗi cặp câu trong list và lưu vào list_accuracy
-   list_accuracy = [calculate_accuracy(goal, manual) for goal, manual in zip(list_goal_sentence_with_tag, list_manual_sentence_with_tag)]
-
-   print("Accuracy", sum(list_accuracy) / len(list_accuracy) if list_accuracy else 0)
-   return sum(list_accuracy) / len(list_accuracy) if list_accuracy else 0
-
-def calculate_f1(goal_data, manual_data):
-    tokens_goal, flag_goal = xml2tokens(goal_data)
-    tokens_manual, flag_manual = xml2tokens(manual_data)
-
-    y_pred = []
-    y_true = []
+    len_tokens_goal = len(tokens_goal)
+    len_tokens_manual = len(tokens_manual)
+    y_goal = []
+    y_manual = []
 
     for token_goal, token_manual in zip(tokens_goal, tokens_manual):
-        pred_label1 = token_goal[1]
-        pred_label2 = token_goal[2]
-        pred_label3 = token_goal[3]
+        goal_label1 = token_goal[1]
+        goal_label2 = token_goal[2]
+        goal_label3 = token_goal[3]
 
-        true_label1 = token_manual[1]
-        true_label2 = token_manual[2]
-        true_label3 = token_manual[3]
+        manual_label1 = token_manual[1]
+        manual_label2 = token_manual[2]
+        manual_label3 = token_manual[3]
 
         # Nối 3 cấp lại để tạo thành 1 nhãn duy nhất
-        y_pred.append(pred_label1 + pred_label2 + pred_label3)
-        y_true.append(true_label1 + true_label2 + true_label3)
+        y_goal.append(goal_label1 + " - " + goal_label2 + " - " + goal_label3)
+        y_manual.append(manual_label1 + " - " + manual_label2 + " - " + manual_label3)
 
-    report = classification_report(y_true, y_pred, zero_division=0)
-    print(report)
-    return report
+    return  len_tokens_goal, len_tokens_manual, y_goal, y_manual
+ 
 
-def load_data_to_caculate_f1(goal_path, manual_path):
+def load_data_to_caculate_accuracy(goal_path, manual_path, frag):
     df_goal = pd.read_csv(goal_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
     df_manual = pd.read_csv(manual_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
+    if frag == True:
+      list_goal = df_goal['sentences'].to_list()
+      list_manual = df_manual['tagged_sents'].to_list()
+    else:
+      list_goal = df_goal['tagged_sents'].to_list()
+      list_manual = df_manual['tagged_sents'].to_list() 
 
-    list_goal = df_goal['sentences'].to_list()
-    list_manual = df_manual['tagged_sents'].to_list()
-
-    all_y_true = []
-    all_y_pred = []
+    all_y_goal = []
+    all_y_manual = []
 
     for goal, manual in zip(list_goal, list_manual):
-        tokens_goal, _ = xml2tokens(goal)
-        tokens_manual, _ = xml2tokens(manual)
+        result = calculate_token(goal, manual)
+        if result[0] != result[1]:
+         continue
+         
+        y_goal = result[2]
+        y_manual = result[3] 
+        
+        all_y_goal.extend(y_goal)
+        all_y_manual.extend(y_manual)
 
-        for tg, tm in zip(tokens_goal, tokens_manual):
-            all_y_true.append(tg[1] + tg[2] + tg[3])
-            all_y_pred.append(tm[1] + tm[2] + tm[3])
+    print(classification_report(all_y_goal, all_y_manual, zero_division=0))
 
-    print(classification_report(all_y_true, all_y_pred, zero_division=0))
+
+a = []
+b = []
+
+def merge_by_value_unique(tuple1: tuple, tuple2: tuple):
+    combined = []
+    for part in tuple1 + tuple2:
+        combined.extend(part)
+
+    value_dict = {}
+    for item in combined:
+        value = item['value']
+        value_dict[value] = item
+
+    merged = list(value_dict.values())
+
+    # Xóa key 'level' trong mỗi OrderedDict
+    for item in merged:
+        item.pop('level', None)  # dùng pop cho an toàn, nếu không có 'level' thì cũng không lỗi
+
+    return merged
+
+def caculate_f1(goal_data: str, manual_data: str):
+    global a, b
+    y_goal, y_manual = [], []
+    result_goal = get_entities_v2(goal_data)  # list of list per sentence
+    result_manual = get_entities_v2(manual_data)
+    all_ner = merge_by_value_unique(result_goal, result_manual)
+    goal_ner  = [item for sublist in result_goal for item in sublist]
+    manual_ner = [item for sublist in result_manual for item in sublist]
+    for ner in all_ner:
+      ner_value = ner['value']
+      # Tìm xem goal và manual có tồn tại 'value' này không
+      goal_match = next((item for item in goal_ner if item['value'] == ner_value), None)
+      manual_match = next((item for item in manual_ner if item['value'] == ner_value), None)
+
+      if goal_match and manual_match:
+            y_goal.append(goal_match['type'])
+            y_manual.append(manual_match['type'])
+      elif goal_match and not manual_match:
+         y_goal.append(goal_match['type'])
+         y_manual.append('O')
+      elif manual_match and not goal_match:
+         y_goal.append('O')
+         y_manual.append(manual_match['type'])
+      # else: không có trường hợp nào cần skip cả
+
+    if len(y_goal) != len(y_manual):
+        print("Lỗi: Kích thước y_goal và y_manual không khớp!")
+   #  print(y_goal, y_manual)
+    return y_goal, y_manual
+
+
+def load_data_to_caculate_f1(goal_path, manual_path, frag):
+    
+    df_goal = pd.read_csv(goal_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
+    df_manual = pd.read_csv(manual_path, encoding="utf-8", quoting=csv.QUOTE_ALL)
+    if frag == True:
+      list_goal = df_goal['sentences'].to_list()
+      list_manual = df_manual['tagged_sents'].to_list()
+    else:
+      list_goal = df_goal['tagged_sents'].to_list()
+      list_manual = df_manual['tagged_sents'].to_list() 
+
+    all_y_goal = []
+    all_y_manual = []
+
+    for goal, manual in zip(list_goal, list_manual):
+        result = caculate_f1(goal, manual)
+        
+        all_y_goal.extend(result[0])
+        all_y_manual.extend(result[1])
+
+    print(classification_report(all_y_goal, all_y_manual, zero_division=0))
+
 
 if __name__ == "__main__":
-   goal_path = r"C:\Users\THAN\Downloads\goal_50_100.csv"
-   manual_path_1_khanh = r"C:\Users\THAN\Downloads\Khanh.csv"
-   manual_path_2_duyen = r"C:\Users\THAN\Downloads\Duyen.csv"
-   #  load_data_to_caculate_accuracy(goal_path, manual_path_1_khanh)
-   #  load_data_to_caculate_accuracy(goal_path, manual_path_2_duyen)
+   # #Set1
+   # goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set1\goal_set1.csv"
+   # manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set1\anh_set01.csv"
+   # manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set1\duyen_set1.csv"
+   # manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set1\khanh_set1.csv"
 
-   load_data_to_caculate_f1(goal_path, manual_path_1_khanh)
-   load_data_to_caculate_f1(goal_path, manual_path_2_duyen)
+   # # Set2
+   # goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set2\goal_set2.csv"
+   # manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set2\anh_set02.csv"
+   # manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set2\duyen_set2.csv"
+   # manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set2\khanh_set2.csv"
 
-   # load_data_to_caculate_f1
-   # goal_sent = 'hello <ENAMEX TYPE="Organization">FPT</ENAMEX>.'
-   # manual_sent = 'hello <ENAMEX TYPE="Organization">FPT </ENAMEX>.'
-   # calculate_accuracy(goal_sent, manual_sent)
-   # test = TestDataConversion()
-   # test.test_cannot_find_sylid()
+   # #Set3
+   # goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set3\goal_set3.csv"
+   # manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set3\anh_set03.csv"
+   # manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set3\duyen_set3.csv"
+   # manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set3\khanh_set3.csv"
+
+   # #Set4
+   # goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set4\goal_set4.csv"
+   # manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set4\annotation_anh_set4.csv"
+   # manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set4\annotation_duyen_set4.csv"
+   # manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set4\annotation_khanh_set4.csv"
+
+   # #Set5
+   # goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set5\goal_set5.csv"
+   # manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set5\annotation_anh_set5.csv"
+   # manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set5\annotation_duyen_set5.csv"
+   # manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set5\annotation_khanh_set5.csv"
+
+   # #Set6
+   # goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set6\goal_set6.csv"
+   # manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set6\annotation_anh_set6.csv"
+   # manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set6\annotation_duyen_set6.csv"
+   # manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set6\annotation_khanh_set6.csv"
+
+   #Set7
+   goal_path = r"D:\HK6\CS321_NNHNL\evaluate\set7\goal_set7.csv"
+   manual_path_1 = r"D:\HK6\CS321_NNHNL\evaluate\set7\annotation_anh_set7.csv"
+   manual_path_2 = r"D:\HK6\CS321_NNHNL\evaluate\set7\annotation_duyen_set7.csv"
+   manual_path_3 = r"D:\HK6\CS321_NNHNL\evaluate\set7\annotation_khanh_set7.csv"
+
+   load_data_to_caculate_f1(goal_path, manual_path_3, True)
+   # load_data_to_caculate_f1(manual_path_1, manual_path_2, False)
+
+   
