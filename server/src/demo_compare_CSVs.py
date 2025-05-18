@@ -29,17 +29,17 @@ if uploaded_file1 and uploaded_file2 and uploaded_file3:
             .merge(df3[['index', 'tagged_sents']].rename(columns={'tagged_sents': 'tagged_sents_file3'}),
                    on='index', how='inner')
 
-        # So sánh 3 cột và lọc ra những dòng khác nhau
-        diff_df = merged_df[
-            (merged_df['tagged_sents_file1'] != merged_df['tagged_sents_file2']) |
-            (merged_df['tagged_sents_file1'] != merged_df['tagged_sents_file3']) |
-            (merged_df['tagged_sents_file2'] != merged_df['tagged_sents_file3'])
-        ]
+        # # So sánh 3 cột và lọc ra những dòng khác nhau
+        # diff_df = merged_df[
+        #     (merged_df['tagged_sents_file1'] != merged_df['tagged_sents_file2']) |
+        #     (merged_df['tagged_sents_file1'] != merged_df['tagged_sents_file3']) |
+        #     (merged_df['tagged_sents_file2'] != merged_df['tagged_sents_file3'])
+        # ]
 
         # Hiển thị kết quả
-        if not diff_df.empty:
+        if not merged_df.empty:
             st.write("### Kết quả so sánh (các dòng khác nhau giữa 3 file):")
-            st.dataframe(diff_df)
+            st.dataframe(merged_df)
         else:
             st.success("Không có sự khác biệt trong cột 'tagged_sents' giữa ba file.")
 
