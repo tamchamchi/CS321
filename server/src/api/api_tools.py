@@ -5,8 +5,11 @@ from src.features.build_convert_output_of_model_to_xml import convert_to_ner_for
 from src.models.predict_model import predict
 from src.configs import LOG_DIR
 import logging
+import os
 
 router = APIRouter()
+
+os.makedirs(LOG_DIR, exist_ok=True)
 
 # Configure logging
 logging.basicConfig(

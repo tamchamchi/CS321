@@ -44,6 +44,9 @@ if __name__ == "__main__":
      model_dir = os.path.dirname(CRF_CONFIG["model_path"])
      os.makedirs(model_dir, exist_ok=True)
 
+     # Đảm bảo thư mục lưu báo cáo tồn tại
+     os.makedirs(REPORT_DIR, exist_ok=True)
+
      # Lưu model
      with open(f'{CRF_CONFIG["model_path"]}', "wb") as file:
           pickle.dump(crf_model, file)
