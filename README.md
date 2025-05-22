@@ -104,7 +104,7 @@ source .venv/bin/activate  # hoặc .venv\Scripts\activate trên Windows
 uvicorn src.main:app --reload
 ```
 
-### 🌐 Chạy frontend (Next.js)
+### 🌐 Chạy frontend (ReactJS)
 
 Mở tab terminal mới:
 
