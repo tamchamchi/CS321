@@ -150,7 +150,7 @@ npm run dev
 
 ### 💾 Bước 5: Xuất Kết Quả
 
-Khi hoàn thành, bấm nút **Tải xuống CSV** để lưu kết quả gán nhãn. Dữ liệu có thể được lưu dưới dạng annotated_data.json hoặc CSV tùy chỉnh.
+Khi hoàn thành, bấm nút **Tải xuống CSV** để lưu kết quả gán nhãn. Dữ liệu có thể được lưu dưới dạng `annotation.csv` hoặc CSV tùy chỉnh.
 ![Mô tả tải dữ liệu](./assets/image_04.png)
 
 ---
