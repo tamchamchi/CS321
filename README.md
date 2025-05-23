@@ -142,10 +142,10 @@ npm run dev
 - **Bước 2**: Chọn câu cần gán nhán.
 ![Mô tả bước 2](./assets/image_02.png)
 - **Bước 3**: Thực hiện quá trình gán nhãn theo 4 thao tác sau.
-    - 1. Bôi đen thực thể cần được gán nhãn.
-    - 2. Chọn nhãn thực thể.
-    - 3. Bấm nút **Gán nhãn & Gửi**.
-    - 4. Bấm nút **Lưu tạm thời**.
+    1. Bôi đen thực thể cần được gán nhãn.
+    2. Chọn nhãn thực thể.
+    3. Bấm nút **Gán nhãn & Gửi**.
+    4. Bấm nút **Lưu tạm thời**.
 ![Mô tả bước 3](./assets/image_03.png)
 
 ### 💾 Bước 5: Xuất Kết Quả
