@@ -157,7 +157,7 @@ Khi hoàn thành, bấm nút **Tải xuống CSV** để lưu kết quả gán n
 
 ## ✅ 5. Hoàn Tất
 
-- Truy cập frontend tại: [http://localhost:3000](http://localhost:3000)
+- Truy cập frontend tại: [http://localhost:5173](http://localhost:5173)
 - API backend chạy tại: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
