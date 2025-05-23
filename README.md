@@ -1,10 +1,11 @@
-# CS321 Annotation Tool
 
-Công cụ hỗ trợ huấn luyện mô hình và gán nhãn dữ liệu cho bài toán xử lý ngôn ngữ tự nhiên.
+# 🏷️ Công Cụ Gán Nhãn NER Cho Tiếng Việt
+
+Công cụ hỗ trợ huấn luyện mô hình và gán nhãn dữ liệu cho bài toán Nhận diện Thực thể Tên (Named Entity Recognition - NER) trong tiếng Việt.
 
 ---
 
-## 📆 1. Clone repository
+## 📁 1. Clone Repository
 
 ```bash
 git clone https://github.com/tamchamchi/CS321.git
@@ -13,7 +14,7 @@ cd CS321
 
 ---
 
-## ⚙️ 2. Cài đặt môi trường và dependencies
+## ⚙️ 2. Cài Đặt Môi Trường và Phụ Thuộc
 
 Bạn cần cài đặt các gói phụ thuộc riêng cho `server` và `client`.
 
@@ -22,7 +23,7 @@ Bạn cần cài đặt các gói phụ thuộc riêng cho `server` và `client`
 ```bash
 cd server
 python -m venv .venv
-source .venv/bin/activate  # Trên Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cd ..
 ```
@@ -37,15 +38,17 @@ cd ..
 
 ---
 
-## 📁 3. Chuẩn bị dữ liệu
+## 🛠️ 3. Cài Đặt và Sử Dụng Preprocessing Tool
 
-### Tạo thư mục chứa dữ liệu đã xử lý:
+### 📌 Bước 1: Chuẩn Bị Dữ Liệu
+
+Tạo thư mục chứa dữ liệu đã xử lý:
 
 ```bash
 mkdir -p server/data/processed
 ```
 
-### Tạo 3 file dữ liệu CSV trong `server/data/processed/` với định dạng:
+Tạo 3 file CSV trong `server/data/processed/` với định dạng sau:
 
 #### `train.csv`
 
@@ -74,50 +77,87 @@ id,sentences
 ...
 ```
 
----
-
-## 🚀 4. Huấn luyện mô hình
+### 🚀 Bước 2: Huấn Luyện Mô Hình
 
 ```bash
 ./scripts/train.sh
 ```
 
----
-
-## 🔍 5. Dự đoán để chuẩn bị dữ liệu cho annotation tool
+### 🔍 Bước 3: Dự Đoán Kết Quả Cho Gán Nhãn
 
 ```bash
 ./scripts/predict.sh
 ```
 
-Sau khi chạy, một file `predict_result.csv` sẽ được tạo trong thư mục dữ liệu. Đây là dữ liệu đầu vào cho công cụ gán nhãn.
+Kết quả dự đoán sẽ được lưu tại `server/data/processed/predict_result.csv`. File này là dữ liệu đầu vào cho công cụ gán nhãn.
 
 ---
 
-## 🖥️ 6. Chạy annotation tool
+## 🖍️ 4. Hướng Dẫn Sử Dụng Annotation Tool
 
-### 📡 Chạy backend (FastAPI)
+Annotation Tool là giao diện người dùng trực quan giúp bạn gán nhãn thực thể trong văn bản, sử dụng kết quả dự đoán từ mô hình để tinh chỉnh thủ công.
+
+### 📥 1: Chuẩn Bị Dữ Liệu Gán Nhãn
+
+Sau khi chạy lệnh dự đoán:
+
+```bash
+./scripts/predict.sh
+```
+
+Một file `predict_result.csv` sẽ được tạo tại:
+
+```
+server/data/processed/predict_result.csv
+```
+
+### ⚙️ 2: Khởi Động Hệ Thống
+
+#### ✅ Khởi động Backend (FastAPI)
 
 ```bash
 cd server
-source .venv/bin/activate  # hoặc .venv\Scripts\activate trên Windows
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 uvicorn src.main:app --reload
 ```
 
-### 🌐 Chạy frontend (ReactJS)
+#### 🌐 Khởi động Frontend (ReactJS)
 
-Mở tab terminal mới:
+Mở một terminal mới:
 
 ```bash
 cd client
 npm run dev
 ```
 
+### 🔗 3: Truy Cập Giao Diện Gán Nhãn
+
+- Mở trình duyệt và truy cập: [http://localhost:3000](http://localhost:3000)
+- Giao diện sẽ hiển thị danh sách câu cần gán nhãn cùng với đề xuất thực thể từ mô hình.
+
+### ✍️ 4: Gán Nhãn Thực Thể
+
+- **Bước 1**: Import file `predict_result.csv` thông qua nút **Choose File**.
+![Mô tả bước 1](./assets/image_01.png)
+- **Bước 2**: Chọn câu cần gán nhán.
+![Mô tả bước 2](./assets/image_02.png)
+- **Bước 3**: Thực hiện quá trình gán nhãn theo 4 thao tác sau.
+    - 1. Bôi đen thực thể cần được gán nhãn.
+    - 2. Chọn nhãn thực thể.
+    - 3. Bấm nút **Gán nhãn & Gửi**.
+    - 4. Bấm nút **Lưu tạm thời**.
+![Mô tả bước 3](./assets/image_03.png)
+
+### 💾 Bước 5: Xuất Kết Quả
+
+Khi hoàn thành, bấm nút **Tải xuống CSV** để lưu kết quả gán nhãn. Dữ liệu có thể được lưu dưới dạng annotated_data.json hoặc CSV tùy chỉnh.
+![Mô tả tải dữ liệu](./assets/image_04.png)
+
 ---
 
-## ✅ Hoàn tất
+## ✅ 5. Hoàn Tất
 
-* Truy cập frontend ở `http://localhost:3000`
-* API backend chạy ở `http://127.0.0.1:8000`
+- Truy cập frontend tại: [http://localhost:3000](http://localhost:3000)
+- API backend chạy tại: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
