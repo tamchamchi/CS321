@@ -132,7 +132,7 @@ npm run dev
 
 ### 🔗 3: Truy Cập Giao Diện Gán Nhãn
 
-- Mở trình duyệt và truy cập: [http://localhost:3000](http://localhost:3000)
+- Mở trình duyệt và truy cập: [http://localhost:5173](http://localhost:5173)
 - Giao diện sẽ hiển thị danh sách câu cần gán nhãn cùng với đề xuất thực thể từ mô hình.
 
 ### ✍️ 4: Gán Nhãn Thực Thể
