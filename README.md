@@ -144,10 +144,10 @@ npm run dev
 
 * **Bước 3**: Gán nhãn thực thể qua 4 bước:
 
-  1. Bôi đen thực thể trong câu.
-  2. Chọn loại nhãn thực thể.
-  3. Nhấn **Gán nhãn & Gửi**.
-  4. Nhấn **Lưu tạm thời**.
+  - **1.** Bôi đen thực thể trong câu.
+  - **2.** Chọn loại nhãn thực thể.
+  - **3.** Nhấn **Gán nhãn & Gửi**.
+  - **4.** Nhấn **Lưu tạm thời**.
 
   ![Gán nhãn](./assets/image_03.png)
 
