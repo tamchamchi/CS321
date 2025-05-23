@@ -1,4 +1,3 @@
-
 # 🏷️ Công Cụ Gán Nhãn NER Cho Tiếng Việt
 
 Công cụ hỗ trợ huấn luyện mô hình và gán nhãn dữ liệu cho bài toán Nhận diện Thực thể Tên (Named Entity Recognition - NER) trong tiếng Việt.
@@ -16,14 +15,14 @@ cd CS321
 
 ## ⚙️ 2. Cài Đặt Môi Trường và Phụ Thuộc
 
-Bạn cần cài đặt các gói phụ thuộc riêng cho `server` và `client`.
+Bạn cần cài đặt các gói phụ thuộc riêng cho hai thành phần: `server` và `client`.
 
 ### 📂 Server
 
 ```bash
 cd server
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Trên Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cd ..
 ```
@@ -48,7 +47,7 @@ Tạo thư mục chứa dữ liệu đã xử lý:
 mkdir -p server/data/processed
 ```
 
-Tạo 3 file CSV trong `server/data/processed/` với định dạng sau:
+Tạo ba tệp CSV trong thư mục `server/data/processed/` với định dạng như sau:
 
 #### `train.csv`
 
@@ -83,45 +82,45 @@ id,sentences
 ./scripts/train.sh
 ```
 
-### 🔍 Bước 3: Dự Đoán Kết Quả Cho Gán Nhãn
+### 🔍 Bước 3: Dự Đoán Dữ Liệu Cho Công Cụ Gán Nhãn
 
 ```bash
 ./scripts/predict.sh
 ```
 
-Kết quả dự đoán sẽ được lưu tại `server/data/processed/predict_result.csv`. File này là dữ liệu đầu vào cho công cụ gán nhãn.
+File kết quả `predict_result.csv` sẽ được tạo tại `server/data/processed/`. Đây là dữ liệu đầu vào cho công cụ gán nhãn.
 
 ---
 
 ## 🖍️ 4. Hướng Dẫn Sử Dụng Annotation Tool
 
-Annotation Tool là giao diện người dùng trực quan giúp bạn gán nhãn thực thể trong văn bản, sử dụng kết quả dự đoán từ mô hình để tinh chỉnh thủ công.
+Annotation Tool cung cấp giao diện trực quan để người dùng thực hiện gán nhãn thực thể cho câu văn, dựa trên kết quả dự đoán từ mô hình.
 
-### 📥 1: Chuẩn Bị Dữ Liệu Gán Nhãn
+### 📥 Bước 1: Chuẩn Bị Dữ Liệu Gán Nhãn
 
-Sau khi chạy lệnh dự đoán:
+Chạy lệnh dự đoán:
 
 ```bash
 ./scripts/predict.sh
 ```
 
-Một file `predict_result.csv` sẽ được tạo tại:
+File `predict_result.csv` sẽ được tạo tại:
 
 ```
 server/data/processed/predict_result.csv
 ```
 
-### ⚙️ 2: Khởi Động Hệ Thống
+### ⚙️ Bước 2: Khởi Động Hệ Thống
 
-#### ✅ Khởi động Backend (FastAPI)
+#### ✅ Backend (FastAPI)
 
 ```bash
 cd server
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Trên Windows: .venv\Scripts\activate
 uvicorn src.main:app --reload
 ```
 
-#### 🌐 Khởi động Frontend (ReactJS)
+#### 🌐 Frontend (ReactJS)
 
 Mở một terminal mới:
 
@@ -130,34 +129,38 @@ cd client
 npm run dev
 ```
 
-### 🔗 3: Truy Cập Giao Diện Gán Nhãn
+### 🔗 Bước 3: Truy Cập Giao Diện Gán Nhãn
 
-- Mở trình duyệt và truy cập: [http://localhost:5173](http://localhost:5173)
-- Giao diện sẽ hiển thị danh sách câu cần gán nhãn cùng với đề xuất thực thể từ mô hình.
+* Truy cập: [http://localhost:5173/](http://localhost:5173/)
+* Giao diện sẽ hiển thị danh sách câu cần gán nhãn cùng với gợi ý từ mô hình.
 
-### ✍️ 4: Gán Nhãn Thực Thể
+### ✍️ Bước 4: Thực Hiện Gán Nhãn
 
-- **Bước 1**: Import file `predict_result.csv` thông qua nút **Choose File**.
-![Mô tả bước 1](./assets/image_01.png)
-- **Bước 2**: Chọn câu cần gán nhán.
-![Mô tả bước 2](./assets/image_02.png)
-- **Bước 3**: Thực hiện quá trình gán nhãn theo 4 thao tác sau.
-    1. Bôi đen thực thể cần được gán nhãn.
-    2. Chọn nhãn thực thể.
-    3. Bấm nút **Gán nhãn & Gửi**.
-    4. Bấm nút **Lưu tạm thời**.
-![Mô tả bước 3](./assets/image_03.png)
+* **Bước 1**: Import file `predict_result.csv` bằng nút "Choose File".
+  ![Import dữ liệu](./assets/image_01.png)
+
+* **Bước 2**: Chọn câu cần gán nhãn.
+  ![Chọn câu](./assets/image_02.png)
+
+* **Bước 3**: Gán nhãn thực thể qua 4 bước:
+
+  1. Bôi đen thực thể trong câu.
+  2. Chọn loại nhãn thực thể.
+  3. Nhấn **Gán nhãn & Gửi**.
+  4. Nhấn **Lưu tạm thời**.
+
+  ![Gán nhãn](./assets/image_03.png)
 
 ### 💾 Bước 5: Xuất Kết Quả
 
-Khi hoàn thành, bấm nút **Tải xuống CSV** để lưu kết quả gán nhãn. Dữ liệu có thể được lưu dưới dạng `annotation.csv` hoặc CSV tùy chỉnh.
-![Mô tả tải dữ liệu](./assets/image_04.png)
+Khi hoàn thành, bấm nút **Tải xuống CSV** để lưu kết quả gán nhãn. Dữ liệu có thể được lưu dưới dạng `annotated_data.json` hoặc CSV tùy chỉnh.
+![Xuất kết quả](./assets/image_04.png)
 
 ---
 
 ## ✅ 5. Hoàn Tất
 
-- Truy cập frontend tại: [http://localhost:5173](http://localhost:5173)
-- API backend chạy tại: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* Truy cập frontend tại: [http://localhost:5173](http://localhost:5173)
+* Backend API hoạt động tại: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
